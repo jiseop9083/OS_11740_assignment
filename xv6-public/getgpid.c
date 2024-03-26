@@ -5,14 +5,12 @@
 #include "proc.h"
 
 int getgpid() {
-	// TODO: implement grand parent process id
-
+	if(myproc()->pid == 1 || myproc()->parent->pid == 1)
+		return -1;
 	return myproc()->parent->parent->pid;
-	//return 0;
 }
 
 int sys_getgpid() {
-	// TODO: check to exist grand parent
 	return getgpid();
 
 }
