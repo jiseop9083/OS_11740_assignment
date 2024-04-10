@@ -42,6 +42,12 @@ sys_getpid(void)
   return myproc()->pid;
 }
 
+int 
+getlev(void)
+{
+  return myproc()->queuelev;
+}
+
 int
 sys_sbrk(void)
 {
@@ -75,6 +81,12 @@ sys_sleep(void)
   }
   release(&tickslock);
   return 0;
+}
+
+void
+sys_yield(void){
+	yield();
+	return;
 }
 
 // return how many clock tick interrupts have occurred
