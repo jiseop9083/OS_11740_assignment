@@ -1,0 +1,5 @@
+how to use xv6 OS
+1. cd ./xv6-public
+2. ./bootxv6.sh
+3. to quit, press ctrl+a and x
+

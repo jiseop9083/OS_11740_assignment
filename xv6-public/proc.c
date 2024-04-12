@@ -365,6 +365,7 @@ scheduler(void)
 		if(!ismoq) // unmonopolize
 			break;
 	  }
+	  ismoq = 0;
 	}
 	else{
 	  int level;
@@ -376,7 +377,7 @@ scheduler(void)
 		    for(i = 10; i >= 0; i--){
 			  for(j = 0; j < ptable.queuecnt[3]; j++){
 			    if(ptable.lqueue[3][j]->priority == i){
-				  for(k = j; j < ptable.queuecnt[3]; k++){
+				  for(k = j; j < ptable.queuecnt[3] - 1; k++){
 					ptable.lqueue[3][k] = ptable.lqueue[3][k+1];
 				  }
 				  ptable.queuecnt[3]--;
@@ -390,7 +391,7 @@ scheduler(void)
 		  }
 		  else{
 			p = ptable.lqueue[level][0];
-		    for(i = 0; i < ptable.queuecnt[level]; i++){
+		    for(i = 0; i < ptable.queuecnt[level] - 1; i++){
 		      ptable.lqueue[level][i] = ptable.lqueue[level][i + 1];		
 		    }
 		    ptable.queuecnt[level]--;
@@ -408,7 +409,16 @@ scheduler(void)
           // Process is done running for now.
           // It should have changed its p->state before coming back.
           c->proc = 0;
-		  level = 0;   
+		  if(ismoq){
+            level = 3;
+		    break;
+		  }
+		  if(ptable.queuecnt[2] > 0)
+		  	level = 2;   
+		  if(ptable.queuecnt[1] > 0)
+			level = 1;
+		  if(ptable.queuecnt[0] > 0)
+			level = 0;
 		}
       }
 	}
@@ -450,7 +460,7 @@ yield(void)
 
   acquire(&ptable.lock);  //DOC: yieldlock
   p->ticks++;
-  if(p->ticks == p->queuelev * 2 + 2){ /////////////////
+  if(p->ticks >= p->queuelev * 2 + 2){ /////////////////
     p->ticks = 0;
 	switch (p->queuelev){
 	  case 0:
@@ -634,6 +644,8 @@ procdump(void)
 void
 priorityboosting(void)
 {
+  if(ismoq)
+	return;
   struct proc *p;
   acquire(&ptable.lock);
   int i;
@@ -653,16 +665,12 @@ priorityboosting(void)
 int 
 setpriority(int pid, int priority)
 {
-  if(priority < 0 || priority > 10)
-	  return -2;
-
-  struct proc *p;
-  
+  struct proc *p; 
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->pid == pid){
 	  p->priority = priority;
-
+	  release(&ptable.lock);
 	  return 0;
 	}
 
@@ -674,17 +682,13 @@ setpriority(int pid, int priority)
 int
 setmonopoly(int pid, int password)
 {
-  if(password != 2020052633)
-	  return -2;
-  if(myproc()->pid == pid)
-	  return -4;
   struct proc *p;
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 	if(p->pid == pid){
-	  if(p->queuelev == 99){ // process already exists in moq
-		  release(&ptable.lock);
-		  return -3;
+	  if(p->queuelev == 99){
+		release(&ptable.lock);
+	    return -3;
 	  }
 	  int i;
 	  for(i = 0; i < ptable.queuecnt[p->queuelev]; i++){
@@ -697,6 +701,7 @@ setmonopoly(int pid, int password)
 	  }
 	  ptable.queuecnt[p->queuelev]--;
 	  ptable.moq[ptable.moqcnt++] = p;
+	  p->queuelev = 99;
 	  release(&ptable.lock);
 	  return ptable.moqcnt;
 	}
@@ -708,7 +713,7 @@ setmonopoly(int pid, int password)
 void 
 monopolize(void)
 {
-  ismoq = 0;
+  ismoq = 1;
   return;
 }
 

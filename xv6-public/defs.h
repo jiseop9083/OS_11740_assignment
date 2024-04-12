@@ -123,11 +123,10 @@ void            wakeup(void*);
 void            priorityboosting(void);
 // custom syscall
 void            yield(void);
-int             getlev(void);
-int             setpriority(int pid, int priority);
-int             setmonopoly(int pid, int password);
-void            monopolize();
-void            unmonopolize();
+int             setpriority(int, int);
+int             setmonopoly(int, int);
+void            monopolize(void);
+void            unmonopolize(void);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
