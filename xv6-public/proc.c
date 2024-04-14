@@ -13,13 +13,13 @@ struct {
   struct proc* lqueue[4][NPROC]; // Ln queues
   struct proc* moq[NPROC];  // moq
   int queuecnt[4]; // number of process in Ln queue
-  int moqcnt;
+  int moqcnt;    // numer of process in Moq
+	int ismoq;
 } ptable;
 
 static struct proc *initproc;
 
 int nextpid = 1;
-int ismoq = 0;
 extern void forkret(void);
 extern void trapret(void);
 
@@ -31,9 +31,12 @@ pinit(void)
 {
   initlock(&ptable.lock, "ptable");
   int i;
+	acquire(&ptable.lock);
   for(i = 0; i <= 3; i++) ///////////
-	ptable.queuecnt[i] = 0;
+		ptable.queuecnt[i] = 0;
   ptable.moqcnt = 0;
+	ptable.ismoq = 1;
+	release(&ptable.lock);
 }
 
 // Must be called with interrupts disabled
@@ -100,7 +103,7 @@ found:
   p->pid = nextpid++;
   p->priority = 0;  //////////////
   p->queuelev = 0; //////////////////
-  p->ticks = 0; ////////////////
+  p->ticks = 0;
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -161,8 +164,9 @@ userinit(void)
   acquire(&ptable.lock);
 
   p->state = RUNNABLE;          
-  ptable.lqueue[0][ptable.queuecnt[0]++] = p; //////////////////
-  release(&ptable.lock);
+  ptable.lqueue[0][ptable.queuecnt[0]] = p; //////////////////
+  ptable.queuecnt[0]++;
+	release(&ptable.lock);
 }
 
 // Grow current process's memory by n bytes.
@@ -227,8 +231,9 @@ fork(void)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
-  ptable.lqueue[0][ptable.queuecnt[0]++] = np; ////////
-
+	np->queuelev = 0;
+  ptable.lqueue[0][ptable.queuecnt[0]] = np;
+  ptable.queuecnt[0]++;
   release(&ptable.lock);
 
   return pid;
@@ -345,84 +350,99 @@ scheduler(void)
 
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-	if(ismoq){
-      int i;
-	  while(ptable.moqcnt > 0){
-	  	p = ptable.moq[0];
-	    for(i = 0; i < ptable.moqcnt; i++){
-		  ptable.moq[i] = ptable.moq[i+1];
-	    }
-		ptable.moqcnt--;
+		if(ptable.ismoq){
+      release(&ptable.lock);
+			int i;
+			acquire(&ptable.lock);
+	  	while(ptable.moqcnt > 0){
+	  		p = ptable.moq[0];
+	    	for(i = 0; i < ptable.moqcnt - 1; i++){
+		  		ptable.moq[i] = ptable.moq[i + 1];
+	    	}
+				ptable.moqcnt--;
 
-		c->proc = p;
-		switchuvm(p);
-		p->state = RUNNING;
+				c->proc = p;
+				switchuvm(p);
+				p->state = RUNNING;
 
-		swtch(&(c->scheduler), p->context);
-	    switchkvm();
+				swtch(&(c->scheduler), p->context);
+	    	switchkvm();
 
-		c->proc = 0;
-		if(!ismoq) // unmonopolize
-			break;
-	  }
-	  ismoq = 0;
-	}
-	else{
-	  int level;
-	  for(level = 0; level <= 3; level++){
-	    while(ptable.queuecnt[level] > 0){
-		  int i, j, k;
-		  if(level == 3){
-		    int isend = 0;
-		    for(i = 10; i >= 0; i--){
-			  for(j = 0; j < ptable.queuecnt[3]; j++){
-			    if(ptable.lqueue[3][j]->priority == i){
-				  for(k = j; j < ptable.queuecnt[3] - 1; k++){
-					ptable.lqueue[3][k] = ptable.lqueue[3][k+1];
-				  }
-				  ptable.queuecnt[3]--;
-				  isend = 1;
-				  break;
+				c->proc = 0;
+				if(!ptable.ismoq) // unmonopolize
+					break;
+	  	}
+			int monod = 0;
+			for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+				if(p->state != UNUSED && p->state != ZOMBIE && p->queuelev == 99){
+					monod = 1;
+					break;
 				}
-			  }
-			  if(isend)
-				break;
 			}
-		  }
-		  else{
-			p = ptable.lqueue[level][0];
-		    for(i = 0; i < ptable.queuecnt[level] - 1; i++){
-		      ptable.lqueue[level][i] = ptable.lqueue[level][i + 1];		
-		    }
-		    ptable.queuecnt[level]--;
-		  }
-          // Switch to chosen process.  It is the process's job
-          // to release ptable.lock and then reacquire it
-          // before jumping back to us.
-          c->proc = p;
-          switchuvm(p);
-          p->state = RUNNING;
-
-		  swtch(&(c->scheduler), p->context);
-          switchkvm();
-
-          // Process is done running for now.
-          // It should have changed its p->state before coming back.
-          c->proc = 0;
-		  if(ismoq){
-            level = 3;
-		    break;
-		  }
-		  if(ptable.queuecnt[2] > 0)
-		  	level = 2;   
-		  if(ptable.queuecnt[1] > 0)
-			level = 1;
-		  if(ptable.queuecnt[0] > 0)
-			level = 0;
+			release(&ptable.lock);
+			if(!monod)
+				unmonopolize();
 		}
-      }
-	}
-    release(&ptable.lock);
+		else{
+			release(&ptable.lock);
+	  	int level;
+	  	for(level = 0; level <= 3; level++){
+				acquire(&ptable.lock);
+				while(ptable.queuecnt[level] > 0){
+		  		int i, j, k;
+		  		if(level == 3){
+		    		int isend = 0;
+		    		for(i = 10; i >= 0; i--){
+			  			for(j = 0; j < ptable.queuecnt[3]; j++){
+			    			if(ptable.lqueue[3][j]->priority == i){
+				  				p = ptable.lqueue[3][j];
+									for(k = j; k < ptable.queuecnt[3] - 1; k++){
+										ptable.lqueue[3][k] = ptable.lqueue[3][k+1];
+				  				}
+				  				ptable.queuecnt[3]--;
+				  				isend = 1;
+				  				break;
+								}
+			  			}
+			  			if(isend)
+								break;
+						}
+		  		}
+		  		else{
+						p = ptable.lqueue[level][0];
+						for(i = 0; i < ptable.queuecnt[level] - 1; i++){
+		      		ptable.lqueue[level][i] = ptable.lqueue[level][i + 1];		
+		    		}
+		    		ptable.queuecnt[level]--;
+		  		}
+        	// Switch to chosen process.  It is the process's job
+        	// to release ptable.lock and then reacquire it
+        	// before jumping back to us.
+        	c->proc = p;
+        	switchuvm(p);
+        	p->state = RUNNING;
+
+		  		swtch(&(c->scheduler), p->context);
+        	switchkvm();
+
+        	// Process is done running for now.
+        	// It should have changed its p->state before coming back.
+        	c->proc = 0;
+		  		
+					if(ptable.ismoq){
+          	level = 3;
+		    		break;
+		  		}
+		  		if(ptable.queuecnt[2] > 0)
+		  			level = 2;   
+		  		if(ptable.queuecnt[1] > 0)
+						level = 1;
+		  		if(ptable.queuecnt[0] > 0)
+						level = 0;
+				}
+				release(&ptable.lock);
+    	}
+		}
   }
 }
 
@@ -459,39 +479,35 @@ yield(void)
   struct proc *p = myproc();
 
   acquire(&ptable.lock);  //DOC: yieldlock
-  p->ticks++;
-  if(p->ticks >= p->queuelev * 2 + 2){ /////////////////
-    p->ticks = 0;
-	switch (p->queuelev){
-	  case 0:
-		if(p->pid % 2 == 0){
-		  p->queuelev = 2;
-		  ptable.lqueue[2][ptable.queuecnt[2]++] = p;
-		}
-		else{
-		  p->queuelev = 1;
-		  ptable.lqueue[1][ptable.queuecnt[1]++] = p;
-		}
-		break;
-	  case 1:
-		p->queuelev = 3;
-	  	ptable.lqueue[3][ptable.queuecnt[3]++] = p;
-		break;
-	  case 2:
-		p->queuelev = 3;
-		ptable.lqueue[3][ptable.queuecnt[3]++] = p;
-	  	break;
-	  default:
-		if(p->priority > 0)
-			p->priority--;
-		ptable.lqueue[3][ptable.queuecnt[3]++] = p;
-		break;
+		p->ticks = 0; // there are no effect at moq
+		switch (p->queuelev){
+			case 0:
+				if(p->pid % 2 == 0){
+		  		p->queuelev = 2;
+		  		ptable.lqueue[2][ptable.queuecnt[2]++] = p;
+				}
+				else{
+			  	p->queuelev = 1;
+		  		ptable.lqueue[1][ptable.queuecnt[1]++] = p;
+				}
+				break;
+		  case 1:
+				p->queuelev = 3;
+	  		ptable.lqueue[3][ptable.queuecnt[3]++] = p;
+				break;
+		  case 2:
+				p->queuelev = 3;
+				ptable.lqueue[3][ptable.queuecnt[3]++] = p;
+	  		break;
+	  	case 3:
+				if(p->priority > 0)
+					p->priority--;
+				ptable.lqueue[3][ptable.queuecnt[3]++] = p;
+				break;
 
-	}
-	p->queuelev++;
-    p->state = RUNNABLE;    
+		}    
+		p->state = RUNNABLE;
     sched();
-  }
   release(&ptable.lock);
 }
 
@@ -563,10 +579,14 @@ wakeup1(void *chan)
 {
   struct proc *p;
 
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
     if(p->state == SLEEPING && p->chan == chan) {
       p->state = RUNNABLE;
-	  ptable.lqueue[p->queuelev][ptable.queuecnt[p->queuelev]++] = p; //////////////
+			if(p->queuelev != 99)
+	  		ptable.lqueue[p->queuelev][ptable.queuecnt[p->queuelev]++] = p; 
+			else 
+				ptable.moq[ptable.moqcnt++] = p;
+		}
 	}
 }
 
@@ -594,9 +614,12 @@ kill(int pid)
       // Wake process from sleep if necessary.
       if(p->state == SLEEPING){
         p->state = RUNNABLE;
-	    ptable.lqueue[p->queuelev][ptable.queuecnt[p->queuelev]++] = p; ////////////////
-	  }
-	  release(&ptable.lock);
+	    	if(p->queuelev != 99)
+					ptable.lqueue[p->queuelev][ptable.queuecnt[p->queuelev]++] = p;
+	  		else 
+					ptable.moq[ptable.moqcnt++] = p;
+			}
+	  	release(&ptable.lock);
       return 0;
     }
   }
@@ -644,20 +667,22 @@ procdump(void)
 void
 priorityboosting(void)
 {
-  if(ismoq)
-	return;
-  struct proc *p;
-  acquire(&ptable.lock);
+	acquire(&ptable.lock);
+  if(ptable.ismoq){
+		release(&ptable.lock);
+		return;
+	}
+ 	struct proc *p;
   int i;
-  for(i = 0; i < 3; i++){
-	ptable.queuecnt[i] = 0;
+  for(i = 0; i <= 3; i++){
+		ptable.queuecnt[i] = 0;
   }
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-	p->ticks = 0;
-	p->queuelev = 0;
-	if(p->state == RUNNABLE){
-	  ptable.lqueue[0][ptable.queuecnt[0]++] = p;
-	}
+		if(p->state == RUNNABLE){
+	 		p->ticks = 0;
+			p->queuelev = 0;
+			ptable.lqueue[0][ptable.queuecnt[0]++] = p;
+		}
   }
   release(&ptable.lock);
 }
@@ -669,11 +694,10 @@ setpriority(int pid, int priority)
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->pid == pid){
-	  p->priority = priority;
-	  release(&ptable.lock);
-	  return 0;
-	}
-
+	  	p->priority = priority;
+	  	release(&ptable.lock);
+	  	return 0;
+		}
   }
   release(&ptable.lock);
   return -1;
@@ -685,26 +709,30 @@ setmonopoly(int pid, int password)
   struct proc *p;
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-	if(p->pid == pid){
-	  if(p->queuelev == 99){
-		release(&ptable.lock);
-	    return -3;
-	  }
-	  int i;
-	  for(i = 0; i < ptable.queuecnt[p->queuelev]; i++){
-		int ispop = 0;
-		if(ptable.lqueue[p->queuelev][p->queuelev]->pid == pid){
-		  ispop = 1;
+		if(p->pid == pid){
+	  	if(p->queuelev == 99){
+				release(&ptable.lock);
+	    	return -3;
+	  	}
+	  	int i;
+			if(p->state == RUNNABLE){
+				int ispop = 0;
+	  		for(i = 0; i < ptable.queuecnt[p->queuelev] - 1; i++){
+					if(ptable.lqueue[p->queuelev][i]->pid == pid){
+			  		ispop = 1;
+					}
+					if(ispop)
+						ptable.lqueue[p->queuelev][i] = ptable.lqueue[p->queuelev][i+1];
+	  		}
+	  		ptable.queuecnt[p->queuelev]--;
+			}
+			ptable.moq[ptable.moqcnt] = p;
+			ptable.moqcnt++;
+			int ret = ptable.moqcnt;
+	  	p->queuelev = 99;
+	  	release(&ptable.lock);
+	  	return ret;
 		}
-		if(ispop)
-			ptable.lqueue[p->queuelev][i] = ptable.lqueue[p->queuelev][i+1];
-	  }
-	  ptable.queuecnt[p->queuelev]--;
-	  ptable.moq[ptable.moqcnt++] = p;
-	  p->queuelev = 99;
-	  release(&ptable.lock);
-	  return ptable.moqcnt;
-	}
   }
   release(&ptable.lock);
   return -1;
@@ -713,14 +741,20 @@ setmonopoly(int pid, int password)
 void 
 monopolize(void)
 {
-  ismoq = 1;
+	acquire(&ptable.lock);
+  ptable.ismoq = 1;
+	release(&ptable.lock);
   return;
 }
 
 void
 unmonopolize(void)
 {
-  ismoq = 0;
-  ticks = 0;
+	acquire(&ptable.lock);
+  ptable.ismoq = 0;
+	release(&ptable.lock);
+	acquire(&tickslock);
+	ticks = 0;
+	release(&tickslock);
   return;
 }

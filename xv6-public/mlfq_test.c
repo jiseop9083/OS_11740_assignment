@@ -2,7 +2,7 @@
 #include "stat.h"
 #include "user.h"
 
-#define NUM_LOOP 10000
+#define NUM_LOOP 100000
 #define NUM_SLEEP 500
 
 #define NUM_THREAD 8
@@ -12,8 +12,7 @@ int parent;
 int fork_children()
 {
 	int i, p;
-	for(i = 0; i < NUM_THREAD; i++)
-	{
+	for(i = 0; i < NUM_THREAD; i++){
 		if((p = fork()) == 0)
 		{
 			sleep(10);
@@ -193,7 +192,7 @@ int main(int argc, char *argv[])
 		printf(1, "Process %d\n", pid);
 		for(i = 0; i < MAX_LEVEL - 1; i++)
 			printf(1, "L%d: %d\n", i, count[i]);
-		printf(1, "MoQ: %d\n", count[4]);
+		printf(1, "MoQ: %d\n", count[i]);
 	}
 	exit_children();
 	printf(1, "[Test 4] finished\n");
