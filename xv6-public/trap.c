@@ -50,10 +50,11 @@ trap(struct trapframe *tf)
     if(cpuid() == 0){
       acquire(&tickslock);
 	  	ticks++;
-			if(ticks % 100 == 0) { // priority boosting
+			wakeup(&ticks);
+			if(ticks % 100 == 0) { 
 				priorityboosting();	
 			}
-     	wakeup(&ticks);
+     	//wakeup(&ticks);
     	release(&tickslock);
     }
     lapiceoi();
@@ -107,7 +108,7 @@ trap(struct trapframe *tf)
   if(myproc() && myproc()->state == RUNNING &&
      tf->trapno == T_IRQ0+IRQ_TIMER){
 		myproc()->ticks++;
-		if(myproc()->queuelev != 99 && (myproc()->queuelev * 2 + 2) == myproc()->ticks){
+		if(myproc()->qlev != 99 && (myproc()->qlev * 2 + 2) <= myproc()->ticks){
 			yield();
 		}
 	}

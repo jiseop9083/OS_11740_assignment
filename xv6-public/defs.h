@@ -4,6 +4,7 @@ struct file;
 struct inode;
 struct pipe;
 struct proc;
+struct procq;
 struct rtcdate;
 struct spinlock;
 struct sleeplock;
@@ -127,6 +128,14 @@ int             setpriority(int, int);
 int             setmonopoly(int, int);
 void            monopolize(void);
 void            unmonopolize(void);
+
+// procq.c
+void						qinit(struct procq*, int);
+int             isempty(struct procq*);
+void            enqueue(struct procq*, struct proc*);
+struct proc*    dequeue(struct procq*);
+struct proc*    dequeuewithpid(struct procq*, int);
+
 
 // swtch.S
 void            swtch(struct context**, struct context*);
