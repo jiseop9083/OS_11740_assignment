@@ -67,13 +67,13 @@ sys_setmonopoly(void)
   int pid;
   int password;
   if(argint(0, &pid) < 0)
-	return -1;
+		return -1;
   if(argint(1, &password) < 0)
-	return -1;
+		return -1;
   if(password != 2020052633)
-	return -2;
+		return -2;
   if(myproc()->pid == pid)
-	return -4;
+		return -4;
   return setmonopoly(pid, password);
 
 }
