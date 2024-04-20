@@ -45,7 +45,7 @@ sys_getpid(void)
 int 
 sys_getlev(void)
 {
-  return myproc()->queuelev;
+  return myproc()->qlev;
 }
 
 int

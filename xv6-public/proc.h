@@ -50,7 +50,7 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
   int priority;                // priority used in L3 queue
-  int queuelev;
+  int qlev;
   int ticks;                   // time quantum
 };
 
