@@ -365,6 +365,7 @@ scheduler(void)
 					break;
 	  	}
 			int monod = 0;
+			
 			for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 				if(p->state != UNUSED && p->state != ZOMBIE && p->qlev == 99){
 					monod = 1;
@@ -689,11 +690,7 @@ setmonopoly(int pid, int password)
 			}
 			enqueue(&ptable.moq, p);
 	  	p->qlev = 99;
-			int ret = 0;
-			for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-				if(p->qlev == 99 && p->state != ZOMBIE && p->state != UNUSED)
-					ret++;
-
+			int ret = qsize(&ptable.moq);
 	  	release(&ptable.lock);
 	  	return ret;
 		}

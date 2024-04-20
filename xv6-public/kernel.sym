@@ -282,7 +282,7 @@
 80106795 vector0
 801051f0 argint
 80100ab0 exec
-80104890 unmonopolize
+80104860 unmonopolize
 80106cd3 vector145
 80105640 sys_write
 80104e10 release
@@ -350,13 +350,14 @@
 8010624a alltraps
 80106e23 vector173
 80106ba4 vector117
+80104b40 qsize
 80106a69 vector82
 8010706f vector222
 801067dd vector8
 80106d03 vector149
 801016d0 iupdate
 80109000 data
-80104860 monopolize
+80104830 monopolize
 80104f30 memset
 801070e7 vector232
 80103060 main
@@ -423,12 +424,12 @@
 80106d33 vector153
 80106db7 vector164
 80104540 procdump
-80104910 isempty
+801048e0 isempty
 80106bc8 vector121
 80106720 uartputc
 801067c2 vector5
 80106ddb vector167
-80104930 enqueue
+80104900 enqueue
 80106d4b vector155
 801071b3 vector249
 801001f0 brelse
@@ -438,7 +439,7 @@
 80106f97 vector204
 80101780 ilock
 80105da0 sys_exec
-80104a30 dequeue
+80104a00 dequeue
 80106c73 vector137
 8010b460 _binary_initcode_start
 8010514b swtch
@@ -466,7 +467,7 @@
 80106ceb vector147
 80104b70 initsleeplock
 801021c0 ideinit
-801048e0 qinit
+801048b0 qinit
 801075e0 loaduvm
 80106b2f vector104
 80106b9b vector116
@@ -510,7 +511,7 @@
 80106cdf vector146
 80106efb vector191
 80106b26 vector103
-80104a90 dequeuewithpid
+80104a60 dequeuewithpid
 80105c60 sys_mknod
 80102940 lapicstartap
 80107450 switchuvm

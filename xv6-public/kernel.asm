@@ -7057,7 +7057,7 @@ wakeup1(void *chan)
 				enqueue(&ptable.lq[p->qlev], p); 
 801037fb:	81 c2 54 4f 11 80    	add    $0x80114f54,%edx
 80103801:	52                   	push   %edx
-80103802:	e8 29 11 00 00       	call   80104930 <enqueue>
+80103802:	e8 f9 10 00 00       	call   80104900 <enqueue>
 80103807:	83 c4 10             	add    $0x10,%esp
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
 8010380a:	81 fb 54 4f 11 80    	cmp    $0x80114f54,%ebx
@@ -7077,7 +7077,7 @@ wakeup1(void *chan)
 80103820:	83 ec 08             	sub    $0x8,%esp
 80103823:	53                   	push   %ebx
 80103824:	68 94 53 11 80       	push   $0x80115394
-80103829:	e8 02 11 00 00       	call   80104930 <enqueue>
+80103829:	e8 d2 10 00 00       	call   80104900 <enqueue>
 8010382e:	83 c4 10             	add    $0x10,%esp
 80103831:	eb 8d                	jmp    801037c0 <wakeup1+0x10>
 80103833:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
@@ -7244,29 +7244,29 @@ wakeup1(void *chan)
 801039b2:	5a                   	pop    %edx
 801039b3:	6a 00                	push   $0x0
 801039b5:	68 54 4f 11 80       	push   $0x80114f54
-801039ba:	e8 21 0f 00 00       	call   801048e0 <qinit>
+801039ba:	e8 f1 0e 00 00       	call   801048b0 <qinit>
 801039bf:	59                   	pop    %ecx
 801039c0:	58                   	pop    %eax
 801039c1:	6a 00                	push   $0x0
 801039c3:	68 64 50 11 80       	push   $0x80115064
-801039c8:	e8 13 0f 00 00       	call   801048e0 <qinit>
+801039c8:	e8 e3 0e 00 00       	call   801048b0 <qinit>
 801039cd:	58                   	pop    %eax
 801039ce:	5a                   	pop    %edx
 801039cf:	6a 00                	push   $0x0
 801039d1:	68 74 51 11 80       	push   $0x80115174
-801039d6:	e8 05 0f 00 00       	call   801048e0 <qinit>
+801039d6:	e8 d5 0e 00 00       	call   801048b0 <qinit>
 	qinit(&ptable.lq[3], 1);
 801039db:	59                   	pop    %ecx
 801039dc:	58                   	pop    %eax
 801039dd:	6a 01                	push   $0x1
 801039df:	68 84 52 11 80       	push   $0x80115284
-801039e4:	e8 f7 0e 00 00       	call   801048e0 <qinit>
+801039e4:	e8 c7 0e 00 00       	call   801048b0 <qinit>
 	qinit(&ptable.moq, 0);
 801039e9:	58                   	pop    %eax
 801039ea:	5a                   	pop    %edx
 801039eb:	6a 00                	push   $0x0
 801039ed:	68 94 53 11 80       	push   $0x80115394
-801039f2:	e8 e9 0e 00 00       	call   801048e0 <qinit>
+801039f2:	e8 b9 0e 00 00       	call   801048b0 <qinit>
 	release(&ptable.lock);
 801039f7:	c7 04 24 20 2d 11 80 	movl   $0x80112d20,(%esp)
 	ptable.ismoq = 0;
@@ -7449,7 +7449,7 @@ myproc(void) {
 80103b9d:	5a                   	pop    %edx
 80103b9e:	53                   	push   %ebx
 80103b9f:	68 54 4f 11 80       	push   $0x80114f54
-80103ba4:	e8 87 0d 00 00       	call   80104930 <enqueue>
+80103ba4:	e8 57 0d 00 00       	call   80104900 <enqueue>
 	release(&ptable.lock);
 80103ba9:	c7 04 24 20 2d 11 80 	movl   $0x80112d20,(%esp)
 80103bb0:	e8 5b 12 00 00       	call   80104e10 <release>
@@ -7628,7 +7628,7 @@ myproc(void) {
 80103d27:	5a                   	pop    %edx
 80103d28:	57                   	push   %edi
 80103d29:	68 54 4f 11 80       	push   $0x80114f54
-80103d2e:	e8 fd 0b 00 00       	call   80104930 <enqueue>
+80103d2e:	e8 cd 0b 00 00       	call   80104900 <enqueue>
   release(&ptable.lock);
 80103d33:	c7 04 24 20 2d 11 80 	movl   $0x80112d20,(%esp)
 80103d3a:	e8 d1 10 00 00       	call   80104e10 <release>
@@ -7697,7 +7697,7 @@ myproc(void) {
 	  		p = dequeue(&ptable.moq);
 80103dc8:	83 ec 0c             	sub    $0xc,%esp
 80103dcb:	68 94 53 11 80       	push   $0x80115394
-80103dd0:	e8 5b 0c 00 00       	call   80104a30 <dequeue>
+80103dd0:	e8 2b 0c 00 00       	call   80104a00 <dequeue>
 				c->proc = p;
 80103dd5:	89 87 ac 00 00 00    	mov    %eax,0xac(%edi)
 	  		p = dequeue(&ptable.moq);
@@ -7727,7 +7727,7 @@ myproc(void) {
 	  	while(!isempty(&ptable.moq)) {
 80103e13:	83 ec 0c             	sub    $0xc,%esp
 80103e16:	68 94 53 11 80       	push   $0x80115394
-80103e1b:	e8 f0 0a 00 00       	call   80104910 <isempty>
+80103e1b:	e8 c0 0a 00 00       	call   801048e0 <isempty>
 80103e20:	83 c4 10             	add    $0x10,%esp
 80103e23:	85 c0                	test   %eax,%eax
 80103e25:	74 a1                	je     80103dc8 <scheduler+0x48>
@@ -7796,7 +7796,7 @@ unmonopolize(void)
 		  		p = dequeue(&ptable.lq[lev]);
 80103ee0:	83 ec 0c             	sub    $0xc,%esp
 80103ee3:	57                   	push   %edi
-80103ee4:	e8 47 0b 00 00       	call   80104a30 <dequeue>
+80103ee4:	e8 17 0b 00 00       	call   80104a00 <dequeue>
 80103ee9:	89 c7                	mov    %eax,%edi
         	c->proc = p;
 80103eeb:	8b 45 e4             	mov    -0x1c(%ebp),%eax
@@ -7828,7 +7828,7 @@ unmonopolize(void)
 		  		if(!isempty(&ptable.lq[2]))
 80103f2f:	83 ec 0c             	sub    $0xc,%esp
 80103f32:	68 74 51 11 80       	push   $0x80115174
-80103f37:	e8 d4 09 00 00       	call   80104910 <isempty>
+80103f37:	e8 a4 09 00 00       	call   801048e0 <isempty>
 		  		if(!isempty(&ptable.lq[1]))
 80103f3c:	c7 04 24 64 50 11 80 	movl   $0x80115064,(%esp)
 						lev = 2;
@@ -7836,7 +7836,7 @@ unmonopolize(void)
 80103f45:	b8 02 00 00 00       	mov    $0x2,%eax
 80103f4a:	0f 44 d8             	cmove  %eax,%ebx
 		  		if(!isempty(&ptable.lq[1]))
-80103f4d:	e8 be 09 00 00       	call   80104910 <isempty>
+80103f4d:	e8 8e 09 00 00       	call   801048e0 <isempty>
 		  		if(!isempty(&ptable.lq[0]))
 80103f52:	c7 04 24 54 4f 11 80 	movl   $0x80114f54,(%esp)
 						lev = 1;
@@ -7844,7 +7844,7 @@ unmonopolize(void)
 80103f5b:	b8 01 00 00 00       	mov    $0x1,%eax
 80103f60:	0f 44 d8             	cmove  %eax,%ebx
 		  		if(!isempty(&ptable.lq[0]))
-80103f63:	e8 a8 09 00 00       	call   80104910 <isempty>
+80103f63:	e8 78 09 00 00       	call   801048e0 <isempty>
 80103f68:	83 c4 10             	add    $0x10,%esp
 		  			lev = 0;   
 80103f6b:	85 c0                	test   %eax,%eax
@@ -7854,7 +7854,7 @@ unmonopolize(void)
 80103f76:	83 ec 0c             	sub    $0xc,%esp
 80103f79:	8d ba 54 4f 11 80    	lea    -0x7feeb0ac(%edx),%edi
 80103f7f:	57                   	push   %edi
-80103f80:	e8 8b 09 00 00       	call   80104910 <isempty>
+80103f80:	e8 5b 09 00 00       	call   801048e0 <isempty>
 80103f85:	83 c4 10             	add    $0x10,%esp
 80103f88:	89 c6                	mov    %eax,%esi
 80103f8a:	85 c0                	test   %eax,%eax
@@ -8204,7 +8204,7 @@ unmonopolize(void)
 801042fb:	83 ec 08             	sub    $0x8,%esp
 801042fe:	53                   	push   %ebx
 801042ff:	68 74 51 11 80       	push   $0x80115174
-80104304:	e8 27 06 00 00       	call   80104930 <enqueue>
+80104304:	e8 f7 05 00 00       	call   80104900 <enqueue>
 80104309:	83 c4 10             	add    $0x10,%esp
 8010430c:	eb 2b                	jmp    80104339 <yield+0x99>
 8010430e:	66 90                	xchg   %ax,%ax
@@ -8223,7 +8223,7 @@ unmonopolize(void)
 80104328:	83 ec 08             	sub    $0x8,%esp
 8010432b:	53                   	push   %ebx
 8010432c:	68 84 52 11 80       	push   $0x80115284
-80104331:	e8 fa 05 00 00       	call   80104930 <enqueue>
+80104331:	e8 ca 05 00 00       	call   80104900 <enqueue>
 			break;
 80104336:	83 c4 10             	add    $0x10,%esp
 	p->state = RUNNABLE;
@@ -8253,7 +8253,7 @@ unmonopolize(void)
 8010437a:	83 ec 08             	sub    $0x8,%esp
 8010437d:	53                   	push   %ebx
 8010437e:	68 64 50 11 80       	push   $0x80115064
-80104383:	e8 a8 05 00 00       	call   80104930 <enqueue>
+80104383:	e8 78 05 00 00       	call   80104900 <enqueue>
 80104388:	83 c4 10             	add    $0x10,%esp
 8010438b:	eb ac                	jmp    80104339 <yield+0x99>
 8010438d:	8d 76 00             	lea    0x0(%esi),%esi
@@ -8417,7 +8417,7 @@ unmonopolize(void)
 801044ee:	69 c2 10 01 00 00    	imul   $0x110,%edx,%eax
 801044f4:	05 54 4f 11 80       	add    $0x80114f54,%eax
 801044f9:	50                   	push   %eax
-801044fa:	e8 31 04 00 00       	call   80104930 <enqueue>
+801044fa:	e8 01 04 00 00       	call   80104900 <enqueue>
 801044ff:	83 c4 10             	add    $0x10,%esp
 80104502:	eb ba                	jmp    801044be <kill+0x3e>
 80104504:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
@@ -8437,7 +8437,7 @@ unmonopolize(void)
 80104522:	83 ec 08             	sub    $0x8,%esp
 80104525:	50                   	push   %eax
 80104526:	68 94 53 11 80       	push   $0x80115394
-8010452b:	e8 00 04 00 00       	call   80104930 <enqueue>
+8010452b:	e8 d0 03 00 00       	call   80104900 <enqueue>
 80104530:	83 c4 10             	add    $0x10,%esp
 80104533:	eb 89                	jmp    801044be <kill+0x3e>
 80104535:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
@@ -8545,12 +8545,12 @@ unmonopolize(void)
 80104622:	83 ec 08             	sub    $0x8,%esp
 80104625:	6a 00                	push   $0x0
 80104627:	68 54 4f 11 80       	push   $0x80114f54
-8010462c:	e8 af 02 00 00       	call   801048e0 <qinit>
+8010462c:	e8 7f 02 00 00       	call   801048b0 <qinit>
 80104631:	58                   	pop    %eax
 80104632:	5a                   	pop    %edx
 80104633:	6a 00                	push   $0x0
 80104635:	68 64 50 11 80       	push   $0x80115064
-8010463a:	e8 a1 02 00 00       	call   801048e0 <qinit>
+8010463a:	e8 71 02 00 00       	call   801048b0 <qinit>
 8010463f:	59                   	pop    %ecx
 80104640:	5b                   	pop    %ebx
 80104641:	6a 00                	push   $0x0
@@ -8558,13 +8558,13 @@ unmonopolize(void)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 80104648:	bb 54 2d 11 80       	mov    $0x80112d54,%ebx
 		qinit(&ptable.lq[i], 0);
-8010464d:	e8 8e 02 00 00       	call   801048e0 <qinit>
+8010464d:	e8 5e 02 00 00       	call   801048b0 <qinit>
 	qinit(&ptable.lq[3], 1);
 80104652:	58                   	pop    %eax
 80104653:	5a                   	pop    %edx
 80104654:	6a 01                	push   $0x1
 80104656:	68 84 52 11 80       	push   $0x80115284
-8010465b:	e8 80 02 00 00       	call   801048e0 <qinit>
+8010465b:	e8 50 02 00 00       	call   801048b0 <qinit>
 80104660:	83 c4 10             	add    $0x10,%esp
 80104663:	eb 11                	jmp    80104676 <priorityboosting+0x76>
 80104665:	8d 76 00             	lea    0x0(%esi),%esi
@@ -8591,7 +8591,7 @@ unmonopolize(void)
 8010469d:	81 c3 88 00 00 00    	add    $0x88,%ebx
 			enqueue(&ptable.lq[0], p);
 801046a3:	68 54 4f 11 80       	push   $0x80114f54
-801046a8:	e8 83 02 00 00       	call   80104930 <enqueue>
+801046a8:	e8 53 02 00 00       	call   80104900 <enqueue>
 801046ad:	83 c4 10             	add    $0x10,%esp
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 801046b0:	81 fb 54 4f 11 80    	cmp    $0x80114f54,%ebx
@@ -8673,109 +8673,114 @@ unmonopolize(void)
 80104750:	68 20 2d 11 80       	push   $0x80112d20
 80104755:	e8 16 07 00 00       	call   80104e70 <acquire>
 8010475a:	83 c4 10             	add    $0x10,%esp
-8010475d:	eb 13                	jmp    80104772 <setmonopoly+0x32>
+8010475d:	eb 0f                	jmp    8010476e <setmonopoly+0x2e>
 8010475f:	90                   	nop
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 80104760:	81 c3 88 00 00 00    	add    $0x88,%ebx
 80104766:	81 fb 54 4f 11 80    	cmp    $0x80114f54,%ebx
-8010476c:	0f 84 93 00 00 00    	je     80104805 <setmonopoly+0xc5>
+8010476c:	74 62                	je     801047d0 <setmonopoly+0x90>
 		if(p->pid == pid){
-80104772:	39 73 10             	cmp    %esi,0x10(%ebx)
-80104775:	75 e9                	jne    80104760 <setmonopoly+0x20>
+8010476e:	39 73 10             	cmp    %esi,0x10(%ebx)
+80104771:	75 ed                	jne    80104760 <setmonopoly+0x20>
 	  	if(p->qlev == 99){
-80104777:	8b 83 80 00 00 00    	mov    0x80(%ebx),%eax
-8010477d:	83 f8 63             	cmp    $0x63,%eax
-80104780:	0f 84 ba 00 00 00    	je     80104840 <setmonopoly+0x100>
+80104773:	8b 83 80 00 00 00    	mov    0x80(%ebx),%eax
+80104779:	83 f8 63             	cmp    $0x63,%eax
+8010477c:	0f 84 8b 00 00 00    	je     8010480d <setmonopoly+0xcd>
 			if(p->state == RUNNABLE){
-80104786:	83 7b 0c 03          	cmpl   $0x3,0xc(%ebx)
-8010478a:	0f 84 93 00 00 00    	je     80104823 <setmonopoly+0xe3>
+80104782:	83 7b 0c 03          	cmpl   $0x3,0xc(%ebx)
+80104786:	74 68                	je     801047f0 <setmonopoly+0xb0>
 			enqueue(&ptable.moq, p);
-80104790:	83 ec 08             	sub    $0x8,%esp
-80104793:	53                   	push   %ebx
-80104794:	68 94 53 11 80       	push   $0x80115394
-80104799:	e8 92 01 00 00       	call   80104930 <enqueue>
+80104788:	83 ec 08             	sub    $0x8,%esp
+8010478b:	53                   	push   %ebx
+8010478c:	68 94 53 11 80       	push   $0x80115394
+80104791:	e8 6a 01 00 00       	call   80104900 <enqueue>
 	  	p->qlev = 99;
-8010479e:	83 c4 10             	add    $0x10,%esp
-			for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-801047a1:	b8 54 2d 11 80       	mov    $0x80112d54,%eax
-	  	p->qlev = 99;
-801047a6:	c7 83 80 00 00 00 63 	movl   $0x63,0x80(%ebx)
-801047ad:	00 00 00 
-			int ret = 0;
-801047b0:	31 db                	xor    %ebx,%ebx
-801047b2:	eb 10                	jmp    801047c4 <setmonopoly+0x84>
-801047b4:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
-			for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-801047b8:	05 88 00 00 00       	add    $0x88,%eax
-801047bd:	3d 54 4f 11 80       	cmp    $0x80114f54,%eax
-801047c2:	74 28                	je     801047ec <setmonopoly+0xac>
-				if(p->qlev == 99 && p->state != ZOMBIE && p->state != UNUSED)
-801047c4:	83 b8 80 00 00 00 63 	cmpl   $0x63,0x80(%eax)
-801047cb:	75 eb                	jne    801047b8 <setmonopoly+0x78>
-801047cd:	8b 50 0c             	mov    0xc(%eax),%edx
-801047d0:	85 d2                	test   %edx,%edx
-801047d2:	74 e4                	je     801047b8 <setmonopoly+0x78>
-801047d4:	83 fa 05             	cmp    $0x5,%edx
-801047d7:	0f 95 c2             	setne  %dl
-					ret++;
-801047da:	80 fa 01             	cmp    $0x1,%dl
-801047dd:	83 db ff             	sbb    $0xffffffff,%ebx
-			for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-801047e0:	05 88 00 00 00       	add    $0x88,%eax
-801047e5:	3d 54 4f 11 80       	cmp    $0x80114f54,%eax
-801047ea:	75 d8                	jne    801047c4 <setmonopoly+0x84>
+80104796:	c7 83 80 00 00 00 63 	movl   $0x63,0x80(%ebx)
+8010479d:	00 00 00 
+			int ret = qsize(&ptable.moq);
+801047a0:	c7 04 24 94 53 11 80 	movl   $0x80115394,(%esp)
+801047a7:	e8 94 03 00 00       	call   80104b40 <qsize>
 	  	release(&ptable.lock);
-801047ec:	83 ec 0c             	sub    $0xc,%esp
-801047ef:	68 20 2d 11 80       	push   $0x80112d20
-801047f4:	e8 17 06 00 00       	call   80104e10 <release>
+801047ac:	c7 04 24 20 2d 11 80 	movl   $0x80112d20,(%esp)
+			int ret = qsize(&ptable.moq);
+801047b3:	89 c3                	mov    %eax,%ebx
+	  	release(&ptable.lock);
+801047b5:	e8 56 06 00 00       	call   80104e10 <release>
 	  	return ret;
-801047f9:	83 c4 10             	add    $0x10,%esp
+801047ba:	83 c4 10             	add    $0x10,%esp
 }
-801047fc:	8d 65 f8             	lea    -0x8(%ebp),%esp
-801047ff:	89 d8                	mov    %ebx,%eax
-80104801:	5b                   	pop    %ebx
-80104802:	5e                   	pop    %esi
-80104803:	5d                   	pop    %ebp
-80104804:	c3                   	ret    
+801047bd:	8d 65 f8             	lea    -0x8(%ebp),%esp
+801047c0:	89 d8                	mov    %ebx,%eax
+801047c2:	5b                   	pop    %ebx
+801047c3:	5e                   	pop    %esi
+801047c4:	5d                   	pop    %ebp
+801047c5:	c3                   	ret    
+801047c6:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
+801047cd:	8d 76 00             	lea    0x0(%esi),%esi
   release(&ptable.lock);
-80104805:	83 ec 0c             	sub    $0xc,%esp
+801047d0:	83 ec 0c             	sub    $0xc,%esp
   return -1;
-80104808:	bb ff ff ff ff       	mov    $0xffffffff,%ebx
+801047d3:	bb ff ff ff ff       	mov    $0xffffffff,%ebx
   release(&ptable.lock);
-8010480d:	68 20 2d 11 80       	push   $0x80112d20
-80104812:	e8 f9 05 00 00       	call   80104e10 <release>
+801047d8:	68 20 2d 11 80       	push   $0x80112d20
+801047dd:	e8 2e 06 00 00       	call   80104e10 <release>
   return -1;
-80104817:	83 c4 10             	add    $0x10,%esp
+801047e2:	83 c4 10             	add    $0x10,%esp
 }
-8010481a:	8d 65 f8             	lea    -0x8(%ebp),%esp
-8010481d:	89 d8                	mov    %ebx,%eax
-8010481f:	5b                   	pop    %ebx
-80104820:	5e                   	pop    %esi
-80104821:	5d                   	pop    %ebp
-80104822:	c3                   	ret    
+801047e5:	8d 65 f8             	lea    -0x8(%ebp),%esp
+801047e8:	89 d8                	mov    %ebx,%eax
+801047ea:	5b                   	pop    %ebx
+801047eb:	5e                   	pop    %esi
+801047ec:	5d                   	pop    %ebp
+801047ed:	c3                   	ret    
+801047ee:	66 90                	xchg   %ax,%ax
 				dequeuewithpid(&ptable.lq[p->qlev], pid);
-80104823:	69 c0 10 01 00 00    	imul   $0x110,%eax,%eax
-80104829:	83 ec 08             	sub    $0x8,%esp
-8010482c:	56                   	push   %esi
-8010482d:	05 54 4f 11 80       	add    $0x80114f54,%eax
-80104832:	50                   	push   %eax
-80104833:	e8 58 02 00 00       	call   80104a90 <dequeuewithpid>
-80104838:	83 c4 10             	add    $0x10,%esp
-8010483b:	e9 50 ff ff ff       	jmp    80104790 <setmonopoly+0x50>
+801047f0:	69 c0 10 01 00 00    	imul   $0x110,%eax,%eax
+801047f6:	83 ec 08             	sub    $0x8,%esp
+801047f9:	56                   	push   %esi
+801047fa:	05 54 4f 11 80       	add    $0x80114f54,%eax
+801047ff:	50                   	push   %eax
+80104800:	e8 5b 02 00 00       	call   80104a60 <dequeuewithpid>
+80104805:	83 c4 10             	add    $0x10,%esp
+80104808:	e9 7b ff ff ff       	jmp    80104788 <setmonopoly+0x48>
 				release(&ptable.lock);
-80104840:	83 ec 0c             	sub    $0xc,%esp
+8010480d:	83 ec 0c             	sub    $0xc,%esp
 	    	return -3;
-80104843:	bb fd ff ff ff       	mov    $0xfffffffd,%ebx
+80104810:	bb fd ff ff ff       	mov    $0xfffffffd,%ebx
 				release(&ptable.lock);
-80104848:	68 20 2d 11 80       	push   $0x80112d20
-8010484d:	e8 be 05 00 00       	call   80104e10 <release>
+80104815:	68 20 2d 11 80       	push   $0x80112d20
+8010481a:	e8 f1 05 00 00       	call   80104e10 <release>
 	    	return -3;
-80104852:	83 c4 10             	add    $0x10,%esp
-80104855:	eb a5                	jmp    801047fc <setmonopoly+0xbc>
-80104857:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
-8010485e:	66 90                	xchg   %ax,%ax
+8010481f:	83 c4 10             	add    $0x10,%esp
+80104822:	eb 99                	jmp    801047bd <setmonopoly+0x7d>
+80104824:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
+8010482b:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
+8010482f:	90                   	nop
 
-80104860 <monopolize>:
+80104830 <monopolize>:
+{
+80104830:	55                   	push   %ebp
+80104831:	89 e5                	mov    %esp,%ebp
+80104833:	83 ec 14             	sub    $0x14,%esp
+	acquire(&ptable.lock);
+80104836:	68 20 2d 11 80       	push   $0x80112d20
+8010483b:	e8 30 06 00 00       	call   80104e70 <acquire>
+	release(&ptable.lock);
+80104840:	c7 04 24 20 2d 11 80 	movl   $0x80112d20,(%esp)
+  ptable.ismoq = 1;
+80104847:	c7 05 a4 54 11 80 01 	movl   $0x1,0x801154a4
+8010484e:	00 00 00 
+	release(&ptable.lock);
+80104851:	e8 ba 05 00 00       	call   80104e10 <release>
+  return;
+80104856:	83 c4 10             	add    $0x10,%esp
+}
+80104859:	c9                   	leave  
+8010485a:	c3                   	ret    
+8010485b:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
+8010485f:	90                   	nop
+
+80104860 <unmonopolize>:
 {
 80104860:	55                   	push   %ebp
 80104861:	89 e5                	mov    %esp,%ebp
@@ -8785,404 +8790,407 @@ unmonopolize(void)
 8010486b:	e8 00 06 00 00       	call   80104e70 <acquire>
 	release(&ptable.lock);
 80104870:	c7 04 24 20 2d 11 80 	movl   $0x80112d20,(%esp)
-  ptable.ismoq = 1;
-80104877:	c7 05 a4 54 11 80 01 	movl   $0x1,0x801154a4
+  ptable.ismoq = 0;
+80104877:	c7 05 a4 54 11 80 00 	movl   $0x0,0x801154a4
 8010487e:	00 00 00 
 	release(&ptable.lock);
 80104881:	e8 8a 05 00 00       	call   80104e10 <release>
-  return;
-80104886:	83 c4 10             	add    $0x10,%esp
-}
-80104889:	c9                   	leave  
-8010488a:	c3                   	ret    
-8010488b:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
-8010488f:	90                   	nop
-
-80104890 <unmonopolize>:
-{
-80104890:	55                   	push   %ebp
-80104891:	89 e5                	mov    %esp,%ebp
-80104893:	83 ec 14             	sub    $0x14,%esp
-	acquire(&ptable.lock);
-80104896:	68 20 2d 11 80       	push   $0x80112d20
-8010489b:	e8 d0 05 00 00       	call   80104e70 <acquire>
-	release(&ptable.lock);
-801048a0:	c7 04 24 20 2d 11 80 	movl   $0x80112d20,(%esp)
-  ptable.ismoq = 0;
-801048a7:	c7 05 a4 54 11 80 00 	movl   $0x0,0x801154a4
-801048ae:	00 00 00 
-	release(&ptable.lock);
-801048b1:	e8 5a 05 00 00       	call   80104e10 <release>
 	acquire(&tickslock);
-801048b6:	c7 04 24 e0 54 11 80 	movl   $0x801154e0,(%esp)
-801048bd:	e8 ae 05 00 00       	call   80104e70 <acquire>
+80104886:	c7 04 24 e0 54 11 80 	movl   $0x801154e0,(%esp)
+8010488d:	e8 de 05 00 00       	call   80104e70 <acquire>
 	release(&tickslock);
-801048c2:	c7 04 24 e0 54 11 80 	movl   $0x801154e0,(%esp)
+80104892:	c7 04 24 e0 54 11 80 	movl   $0x801154e0,(%esp)
 	ticks = 0;
-801048c9:	c7 05 c0 54 11 80 00 	movl   $0x0,0x801154c0
-801048d0:	00 00 00 
+80104899:	c7 05 c0 54 11 80 00 	movl   $0x0,0x801154c0
+801048a0:	00 00 00 
 	release(&tickslock);
-801048d3:	e8 38 05 00 00       	call   80104e10 <release>
+801048a3:	e8 68 05 00 00       	call   80104e10 <release>
   return;
-801048d8:	83 c4 10             	add    $0x10,%esp
+801048a8:	83 c4 10             	add    $0x10,%esp
 }
-801048db:	c9                   	leave  
-801048dc:	c3                   	ret    
-801048dd:	66 90                	xchg   %ax,%ax
-801048df:	90                   	nop
+801048ab:	c9                   	leave  
+801048ac:	c3                   	ret    
+801048ad:	66 90                	xchg   %ax,%ax
+801048af:	90                   	nop
 
-801048e0 <qinit>:
+801048b0 <qinit>:
 #include "procq.h"
 
 // init queue
 void 
 qinit(struct procq *q, int ispq)
 {
-801048e0:	55                   	push   %ebp
-801048e1:	89 e5                	mov    %esp,%ebp
-801048e3:	8b 45 08             	mov    0x8(%ebp),%eax
+801048b0:	55                   	push   %ebp
+801048b1:	89 e5                	mov    %esp,%ebp
+801048b3:	8b 45 08             	mov    0x8(%ebp),%eax
 	q->st = 0;
 	q->en = 0;
 	q->ispq = ispq;
-801048e6:	8b 55 0c             	mov    0xc(%ebp),%edx
+801048b6:	8b 55 0c             	mov    0xc(%ebp),%edx
 	q->st = 0;
-801048e9:	c7 80 04 01 00 00 00 	movl   $0x0,0x104(%eax)
-801048f0:	00 00 00 
+801048b9:	c7 80 04 01 00 00 00 	movl   $0x0,0x104(%eax)
+801048c0:	00 00 00 
 	q->en = 0;
-801048f3:	c7 80 08 01 00 00 00 	movl   $0x0,0x108(%eax)
-801048fa:	00 00 00 
+801048c3:	c7 80 08 01 00 00 00 	movl   $0x0,0x108(%eax)
+801048ca:	00 00 00 
 	q->ispq = ispq;
-801048fd:	89 90 0c 01 00 00    	mov    %edx,0x10c(%eax)
+801048cd:	89 90 0c 01 00 00    	mov    %edx,0x10c(%eax)
 }
-80104903:	5d                   	pop    %ebp
-80104904:	c3                   	ret    
-80104905:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
-8010490c:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
+801048d3:	5d                   	pop    %ebp
+801048d4:	c3                   	ret    
+801048d5:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
+801048dc:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
 
-80104910 <isempty>:
+801048e0 <isempty>:
 
 
 int 
 isempty(struct procq *q)
 {
-80104910:	55                   	push   %ebp
-80104911:	89 e5                	mov    %esp,%ebp
-80104913:	8b 45 08             	mov    0x8(%ebp),%eax
+801048e0:	55                   	push   %ebp
+801048e1:	89 e5                	mov    %esp,%ebp
+801048e3:	8b 45 08             	mov    0x8(%ebp),%eax
 	if(q->st == q->en)
 		return 1;
 	else 
 		return 0;
 }
-80104916:	5d                   	pop    %ebp
+801048e6:	5d                   	pop    %ebp
 	if(q->st == q->en)
-80104917:	8b 90 08 01 00 00    	mov    0x108(%eax),%edx
-8010491d:	39 90 04 01 00 00    	cmp    %edx,0x104(%eax)
-80104923:	0f 94 c0             	sete   %al
-80104926:	0f b6 c0             	movzbl %al,%eax
+801048e7:	8b 90 08 01 00 00    	mov    0x108(%eax),%edx
+801048ed:	39 90 04 01 00 00    	cmp    %edx,0x104(%eax)
+801048f3:	0f 94 c0             	sete   %al
+801048f6:	0f b6 c0             	movzbl %al,%eax
 }
-80104929:	c3                   	ret    
-8010492a:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
+801048f9:	c3                   	ret    
+801048fa:	8d b6 00 00 00 00    	lea    0x0(%esi),%esi
 
-80104930 <enqueue>:
+80104900 <enqueue>:
 
 void 
 enqueue(struct procq *q, struct proc *p)
 {
-80104930:	55                   	push   %ebp
+80104900:	55                   	push   %ebp
 	if(q->st == (q->en+1) % (NPROC+1))
-80104931:	ba 7f e0 07 7e       	mov    $0x7e07e07f,%edx
+80104901:	ba 7f e0 07 7e       	mov    $0x7e07e07f,%edx
 {
-80104936:	89 e5                	mov    %esp,%ebp
-80104938:	57                   	push   %edi
-80104939:	56                   	push   %esi
-8010493a:	53                   	push   %ebx
-8010493b:	83 ec 1c             	sub    $0x1c,%esp
-8010493e:	8b 5d 08             	mov    0x8(%ebp),%ebx
+80104906:	89 e5                	mov    %esp,%ebp
+80104908:	57                   	push   %edi
+80104909:	56                   	push   %esi
+8010490a:	53                   	push   %ebx
+8010490b:	83 ec 1c             	sub    $0x1c,%esp
+8010490e:	8b 5d 08             	mov    0x8(%ebp),%ebx
 	if(q->st == (q->en+1) % (NPROC+1))
-80104941:	8b bb 08 01 00 00    	mov    0x108(%ebx),%edi
-80104947:	8b b3 04 01 00 00    	mov    0x104(%ebx),%esi
-8010494d:	8d 4f 01             	lea    0x1(%edi),%ecx
-80104950:	89 75 e4             	mov    %esi,-0x1c(%ebp)
-80104953:	89 c8                	mov    %ecx,%eax
-80104955:	f7 ea                	imul   %edx
-80104957:	89 c8                	mov    %ecx,%eax
-80104959:	c1 f8 1f             	sar    $0x1f,%eax
-8010495c:	c1 fa 05             	sar    $0x5,%edx
-8010495f:	29 c2                	sub    %eax,%edx
-80104961:	89 d0                	mov    %edx,%eax
-80104963:	c1 e0 06             	shl    $0x6,%eax
-80104966:	01 d0                	add    %edx,%eax
-80104968:	29 c1                	sub    %eax,%ecx
-8010496a:	39 ce                	cmp    %ecx,%esi
-8010496c:	0f 84 af 00 00 00    	je     80104a21 <enqueue+0xf1>
+80104911:	8b bb 08 01 00 00    	mov    0x108(%ebx),%edi
+80104917:	8b b3 04 01 00 00    	mov    0x104(%ebx),%esi
+8010491d:	8d 4f 01             	lea    0x1(%edi),%ecx
+80104920:	89 75 e4             	mov    %esi,-0x1c(%ebp)
+80104923:	89 c8                	mov    %ecx,%eax
+80104925:	f7 ea                	imul   %edx
+80104927:	89 c8                	mov    %ecx,%eax
+80104929:	c1 f8 1f             	sar    $0x1f,%eax
+8010492c:	c1 fa 05             	sar    $0x5,%edx
+8010492f:	29 c2                	sub    %eax,%edx
+80104931:	89 d0                	mov    %edx,%eax
+80104933:	c1 e0 06             	shl    $0x6,%eax
+80104936:	01 d0                	add    %edx,%eax
+80104938:	29 c1                	sub    %eax,%ecx
+8010493a:	39 ce                	cmp    %ecx,%esi
+8010493c:	0f 84 af 00 00 00    	je     801049f1 <enqueue+0xf1>
 		panic("queue is full\n");
 	if(q->ispq){
-80104972:	8b 83 0c 01 00 00    	mov    0x10c(%ebx),%eax
-80104978:	85 c0                	test   %eax,%eax
-8010497a:	0f 84 80 00 00 00    	je     80104a00 <enqueue+0xd0>
+80104942:	8b 83 0c 01 00 00    	mov    0x10c(%ebx),%eax
+80104948:	85 c0                	test   %eax,%eax
+8010494a:	0f 84 80 00 00 00    	je     801049d0 <enqueue+0xd0>
 		int i;
 		int next; 
 		for(i = q->st; i != q->en; i = next){
-80104980:	8b 45 e4             	mov    -0x1c(%ebp),%eax
-80104983:	39 f8                	cmp    %edi,%eax
-80104985:	0f 84 91 00 00 00    	je     80104a1c <enqueue+0xec>
-8010498b:	89 c2                	mov    %eax,%edx
-8010498d:	eb 0c                	jmp    8010499b <enqueue+0x6b>
-8010498f:	90                   	nop
+80104950:	8b 45 e4             	mov    -0x1c(%ebp),%eax
+80104953:	39 f8                	cmp    %edi,%eax
+80104955:	0f 84 91 00 00 00    	je     801049ec <enqueue+0xec>
+8010495b:	89 c2                	mov    %eax,%edx
+8010495d:	eb 0c                	jmp    8010496b <enqueue+0x6b>
+8010495f:	90                   	nop
 			next = (i+1)%(NPROC+1);
 			if(q->que[next]->priority < p->priority){
 				break;
 			} else{
 				q->que[i] = q->que[next];
-80104990:	89 04 b3             	mov    %eax,(%ebx,%esi,4)
+80104960:	89 04 b3             	mov    %eax,(%ebx,%esi,4)
 		for(i = q->st; i != q->en; i = next){
-80104993:	39 d7                	cmp    %edx,%edi
-80104995:	0f 84 7d 00 00 00    	je     80104a18 <enqueue+0xe8>
+80104963:	39 d7                	cmp    %edx,%edi
+80104965:	0f 84 7d 00 00 00    	je     801049e8 <enqueue+0xe8>
 			next = (i+1)%(NPROC+1);
-8010499b:	8d 4a 01             	lea    0x1(%edx),%ecx
-8010499e:	b8 7f e0 07 7e       	mov    $0x7e07e07f,%eax
-801049a3:	89 d6                	mov    %edx,%esi
-801049a5:	f7 e9                	imul   %ecx
-801049a7:	89 c8                	mov    %ecx,%eax
-801049a9:	c1 f8 1f             	sar    $0x1f,%eax
-801049ac:	c1 fa 05             	sar    $0x5,%edx
-801049af:	29 c2                	sub    %eax,%edx
-801049b1:	89 d0                	mov    %edx,%eax
-801049b3:	c1 e0 06             	shl    $0x6,%eax
-801049b6:	01 d0                	add    %edx,%eax
-801049b8:	29 c1                	sub    %eax,%ecx
+8010496b:	8d 4a 01             	lea    0x1(%edx),%ecx
+8010496e:	b8 7f e0 07 7e       	mov    $0x7e07e07f,%eax
+80104973:	89 d6                	mov    %edx,%esi
+80104975:	f7 e9                	imul   %ecx
+80104977:	89 c8                	mov    %ecx,%eax
+80104979:	c1 f8 1f             	sar    $0x1f,%eax
+8010497c:	c1 fa 05             	sar    $0x5,%edx
+8010497f:	29 c2                	sub    %eax,%edx
+80104981:	89 d0                	mov    %edx,%eax
+80104983:	c1 e0 06             	shl    $0x6,%eax
+80104986:	01 d0                	add    %edx,%eax
+80104988:	29 c1                	sub    %eax,%ecx
 			if(q->que[next]->priority < p->priority){
-801049ba:	8b 04 8b             	mov    (%ebx,%ecx,4),%eax
+8010498a:	8b 04 8b             	mov    (%ebx,%ecx,4),%eax
 			next = (i+1)%(NPROC+1);
-801049bd:	89 ca                	mov    %ecx,%edx
+8010498d:	89 ca                	mov    %ecx,%edx
 			if(q->que[next]->priority < p->priority){
-801049bf:	8b 4d 0c             	mov    0xc(%ebp),%ecx
-801049c2:	8b 49 7c             	mov    0x7c(%ecx),%ecx
-801049c5:	39 48 7c             	cmp    %ecx,0x7c(%eax)
-801049c8:	7d c6                	jge    80104990 <enqueue+0x60>
+8010498f:	8b 4d 0c             	mov    0xc(%ebp),%ecx
+80104992:	8b 49 7c             	mov    0x7c(%ecx),%ecx
+80104995:	39 48 7c             	cmp    %ecx,0x7c(%eax)
+80104998:	7d c6                	jge    80104960 <enqueue+0x60>
 			}
 		}
 		q->que[i] = p;
 		q->st = (q->st+NPROC)%(NPROC+1);
-801049ca:	8b 4d e4             	mov    -0x1c(%ebp),%ecx
+8010499a:	8b 4d e4             	mov    -0x1c(%ebp),%ecx
 		q->que[i] = p;
-801049cd:	8b 45 0c             	mov    0xc(%ebp),%eax
+8010499d:	8b 45 0c             	mov    0xc(%ebp),%eax
 		q->st = (q->st+NPROC)%(NPROC+1);
-801049d0:	ba 7f e0 07 7e       	mov    $0x7e07e07f,%edx
-801049d5:	83 c1 40             	add    $0x40,%ecx
+801049a0:	ba 7f e0 07 7e       	mov    $0x7e07e07f,%edx
+801049a5:	83 c1 40             	add    $0x40,%ecx
 		q->que[i] = p;
-801049d8:	89 04 b3             	mov    %eax,(%ebx,%esi,4)
+801049a8:	89 04 b3             	mov    %eax,(%ebx,%esi,4)
 		q->st = (q->st+NPROC)%(NPROC+1);
-801049db:	89 c8                	mov    %ecx,%eax
-801049dd:	f7 ea                	imul   %edx
-801049df:	89 c8                	mov    %ecx,%eax
-801049e1:	c1 f8 1f             	sar    $0x1f,%eax
-801049e4:	c1 fa 05             	sar    $0x5,%edx
-801049e7:	29 c2                	sub    %eax,%edx
-801049e9:	89 d0                	mov    %edx,%eax
-801049eb:	c1 e0 06             	shl    $0x6,%eax
-801049ee:	01 d0                	add    %edx,%eax
-801049f0:	29 c1                	sub    %eax,%ecx
-801049f2:	89 8b 04 01 00 00    	mov    %ecx,0x104(%ebx)
+801049ab:	89 c8                	mov    %ecx,%eax
+801049ad:	f7 ea                	imul   %edx
+801049af:	89 c8                	mov    %ecx,%eax
+801049b1:	c1 f8 1f             	sar    $0x1f,%eax
+801049b4:	c1 fa 05             	sar    $0x5,%edx
+801049b7:	29 c2                	sub    %eax,%edx
+801049b9:	89 d0                	mov    %edx,%eax
+801049bb:	c1 e0 06             	shl    $0x6,%eax
+801049be:	01 d0                	add    %edx,%eax
+801049c0:	29 c1                	sub    %eax,%ecx
+801049c2:	89 8b 04 01 00 00    	mov    %ecx,0x104(%ebx)
 	}
 	else {
 		q->en = (q->en+1) % (NPROC+1);
 		q->que[q->en] = p;
 	}
 }
-801049f8:	8d 65 f4             	lea    -0xc(%ebp),%esp
-801049fb:	5b                   	pop    %ebx
-801049fc:	5e                   	pop    %esi
-801049fd:	5f                   	pop    %edi
-801049fe:	5d                   	pop    %ebp
-801049ff:	c3                   	ret    
+801049c8:	8d 65 f4             	lea    -0xc(%ebp),%esp
+801049cb:	5b                   	pop    %ebx
+801049cc:	5e                   	pop    %esi
+801049cd:	5f                   	pop    %edi
+801049ce:	5d                   	pop    %ebp
+801049cf:	c3                   	ret    
 		q->que[q->en] = p;
-80104a00:	8b 45 0c             	mov    0xc(%ebp),%eax
+801049d0:	8b 45 0c             	mov    0xc(%ebp),%eax
 		q->en = (q->en+1) % (NPROC+1);
-80104a03:	89 8b 08 01 00 00    	mov    %ecx,0x108(%ebx)
+801049d3:	89 8b 08 01 00 00    	mov    %ecx,0x108(%ebx)
 		q->que[q->en] = p;
-80104a09:	89 04 8b             	mov    %eax,(%ebx,%ecx,4)
+801049d9:	89 04 8b             	mov    %eax,(%ebx,%ecx,4)
 }
-80104a0c:	8d 65 f4             	lea    -0xc(%ebp),%esp
-80104a0f:	5b                   	pop    %ebx
-80104a10:	5e                   	pop    %esi
-80104a11:	5f                   	pop    %edi
-80104a12:	5d                   	pop    %ebp
-80104a13:	c3                   	ret    
-80104a14:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
-80104a18:	89 fe                	mov    %edi,%esi
-80104a1a:	eb ae                	jmp    801049ca <enqueue+0x9a>
+801049dc:	8d 65 f4             	lea    -0xc(%ebp),%esp
+801049df:	5b                   	pop    %ebx
+801049e0:	5e                   	pop    %esi
+801049e1:	5f                   	pop    %edi
+801049e2:	5d                   	pop    %ebp
+801049e3:	c3                   	ret    
+801049e4:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
+801049e8:	89 fe                	mov    %edi,%esi
+801049ea:	eb ae                	jmp    8010499a <enqueue+0x9a>
 		for(i = q->st; i != q->en; i = next){
-80104a1c:	8b 75 e4             	mov    -0x1c(%ebp),%esi
-80104a1f:	eb a9                	jmp    801049ca <enqueue+0x9a>
+801049ec:	8b 75 e4             	mov    -0x1c(%ebp),%esi
+801049ef:	eb a9                	jmp    8010499a <enqueue+0x9a>
 		panic("queue is full\n");
-80104a21:	83 ec 0c             	sub    $0xc,%esp
-80104a24:	68 64 82 10 80       	push   $0x80108264
-80104a29:	e8 52 b9 ff ff       	call   80100380 <panic>
-80104a2e:	66 90                	xchg   %ax,%ax
+801049f1:	83 ec 0c             	sub    $0xc,%esp
+801049f4:	68 64 82 10 80       	push   $0x80108264
+801049f9:	e8 82 b9 ff ff       	call   80100380 <panic>
+801049fe:	66 90                	xchg   %ax,%ax
 
-80104a30 <dequeue>:
+80104a00 <dequeue>:
 
 
 struct proc*
 dequeue(struct procq *q){
-80104a30:	55                   	push   %ebp
-80104a31:	89 e5                	mov    %esp,%ebp
-80104a33:	53                   	push   %ebx
-80104a34:	83 ec 04             	sub    $0x4,%esp
-80104a37:	8b 5d 08             	mov    0x8(%ebp),%ebx
+80104a00:	55                   	push   %ebp
+80104a01:	89 e5                	mov    %esp,%ebp
+80104a03:	53                   	push   %ebx
+80104a04:	83 ec 04             	sub    $0x4,%esp
+80104a07:	8b 5d 08             	mov    0x8(%ebp),%ebx
 	if(q->st == q->en)
-80104a3a:	8b 8b 04 01 00 00    	mov    0x104(%ebx),%ecx
-80104a40:	3b 8b 08 01 00 00    	cmp    0x108(%ebx),%ecx
-80104a46:	74 2d                	je     80104a75 <dequeue+0x45>
+80104a0a:	8b 8b 04 01 00 00    	mov    0x104(%ebx),%ecx
+80104a10:	3b 8b 08 01 00 00    	cmp    0x108(%ebx),%ecx
+80104a16:	74 2d                	je     80104a45 <dequeue+0x45>
 		panic("queue is empty\n");
 	q->st = (q->st+1) % (NPROC+1);
-80104a48:	83 c1 01             	add    $0x1,%ecx
-80104a4b:	ba 7f e0 07 7e       	mov    $0x7e07e07f,%edx
-80104a50:	89 c8                	mov    %ecx,%eax
-80104a52:	f7 ea                	imul   %edx
-80104a54:	89 c8                	mov    %ecx,%eax
-80104a56:	c1 f8 1f             	sar    $0x1f,%eax
-80104a59:	c1 fa 05             	sar    $0x5,%edx
-80104a5c:	29 c2                	sub    %eax,%edx
-80104a5e:	89 d0                	mov    %edx,%eax
-80104a60:	c1 e0 06             	shl    $0x6,%eax
-80104a63:	01 d0                	add    %edx,%eax
-80104a65:	29 c1                	sub    %eax,%ecx
-80104a67:	89 8b 04 01 00 00    	mov    %ecx,0x104(%ebx)
+80104a18:	83 c1 01             	add    $0x1,%ecx
+80104a1b:	ba 7f e0 07 7e       	mov    $0x7e07e07f,%edx
+80104a20:	89 c8                	mov    %ecx,%eax
+80104a22:	f7 ea                	imul   %edx
+80104a24:	89 c8                	mov    %ecx,%eax
+80104a26:	c1 f8 1f             	sar    $0x1f,%eax
+80104a29:	c1 fa 05             	sar    $0x5,%edx
+80104a2c:	29 c2                	sub    %eax,%edx
+80104a2e:	89 d0                	mov    %edx,%eax
+80104a30:	c1 e0 06             	shl    $0x6,%eax
+80104a33:	01 d0                	add    %edx,%eax
+80104a35:	29 c1                	sub    %eax,%ecx
+80104a37:	89 8b 04 01 00 00    	mov    %ecx,0x104(%ebx)
 	return q->que[q->st];
-80104a6d:	8b 04 8b             	mov    (%ebx,%ecx,4),%eax
+80104a3d:	8b 04 8b             	mov    (%ebx,%ecx,4),%eax
 }
-80104a70:	8b 5d fc             	mov    -0x4(%ebp),%ebx
-80104a73:	c9                   	leave  
-80104a74:	c3                   	ret    
+80104a40:	8b 5d fc             	mov    -0x4(%ebp),%ebx
+80104a43:	c9                   	leave  
+80104a44:	c3                   	ret    
 		panic("queue is empty\n");
-80104a75:	83 ec 0c             	sub    $0xc,%esp
-80104a78:	68 73 82 10 80       	push   $0x80108273
-80104a7d:	e8 fe b8 ff ff       	call   80100380 <panic>
-80104a82:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
-80104a89:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
+80104a45:	83 ec 0c             	sub    $0xc,%esp
+80104a48:	68 73 82 10 80       	push   $0x80108273
+80104a4d:	e8 2e b9 ff ff       	call   80100380 <panic>
+80104a52:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
+80104a59:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
 
-80104a90 <dequeuewithpid>:
+80104a60 <dequeuewithpid>:
 
 struct proc*
 dequeuewithpid(struct procq *q, int pid){
-80104a90:	55                   	push   %ebp
-80104a91:	89 e5                	mov    %esp,%ebp
-80104a93:	57                   	push   %edi
-80104a94:	56                   	push   %esi
-80104a95:	53                   	push   %ebx
-80104a96:	83 ec 1c             	sub    $0x1c,%esp
-80104a99:	8b 5d 08             	mov    0x8(%ebp),%ebx
-80104a9c:	8b 7d 0c             	mov    0xc(%ebp),%edi
+80104a60:	55                   	push   %ebp
+80104a61:	89 e5                	mov    %esp,%ebp
+80104a63:	57                   	push   %edi
+80104a64:	56                   	push   %esi
+80104a65:	53                   	push   %ebx
+80104a66:	83 ec 1c             	sub    $0x1c,%esp
+80104a69:	8b 5d 08             	mov    0x8(%ebp),%ebx
+80104a6c:	8b 7d 0c             	mov    0xc(%ebp),%edi
 	if(q->st == q->en)
-80104a9f:	8b 83 08 01 00 00    	mov    0x108(%ebx),%eax
-80104aa5:	8b 93 04 01 00 00    	mov    0x104(%ebx),%edx
-80104aab:	89 45 e4             	mov    %eax,-0x1c(%ebp)
-80104aae:	39 c2                	cmp    %eax,%edx
-80104ab0:	0f 84 a2 00 00 00    	je     80104b58 <dequeuewithpid+0xc8>
+80104a6f:	8b 83 08 01 00 00    	mov    0x108(%ebx),%eax
+80104a75:	8b 93 04 01 00 00    	mov    0x104(%ebx),%edx
+80104a7b:	89 45 e4             	mov    %eax,-0x1c(%ebp)
+80104a7e:	39 c2                	cmp    %eax,%edx
+80104a80:	0f 84 a2 00 00 00    	je     80104b28 <dequeuewithpid+0xc8>
 		panic("queue is empty\n");
 	struct proc* p;
 	int i;
 	int next;
 	for(i = q->st; i != q->en; i = next){
 		next = (i+1) % (NPROC+1);
-80104ab6:	be 7f e0 07 7e       	mov    $0x7e07e07f,%esi
-80104abb:	eb 08                	jmp    80104ac5 <dequeuewithpid+0x35>
-80104abd:	8d 76 00             	lea    0x0(%esi),%esi
+80104a86:	be 7f e0 07 7e       	mov    $0x7e07e07f,%esi
+80104a8b:	eb 08                	jmp    80104a95 <dequeuewithpid+0x35>
+80104a8d:	8d 76 00             	lea    0x0(%esi),%esi
 	for(i = q->st; i != q->en; i = next){
-80104ac0:	39 55 e4             	cmp    %edx,-0x1c(%ebp)
-80104ac3:	74 61                	je     80104b26 <dequeuewithpid+0x96>
+80104a90:	39 55 e4             	cmp    %edx,-0x1c(%ebp)
+80104a93:	74 61                	je     80104af6 <dequeuewithpid+0x96>
 		next = (i+1) % (NPROC+1);
-80104ac5:	8d 4a 01             	lea    0x1(%edx),%ecx
-80104ac8:	89 c8                	mov    %ecx,%eax
-80104aca:	f7 ee                	imul   %esi
-80104acc:	89 c8                	mov    %ecx,%eax
-80104ace:	c1 f8 1f             	sar    $0x1f,%eax
-80104ad1:	c1 fa 05             	sar    $0x5,%edx
-80104ad4:	29 c2                	sub    %eax,%edx
-80104ad6:	89 d0                	mov    %edx,%eax
-80104ad8:	c1 e0 06             	shl    $0x6,%eax
-80104adb:	01 d0                	add    %edx,%eax
-80104add:	29 c1                	sub    %eax,%ecx
-80104adf:	89 ca                	mov    %ecx,%edx
+80104a95:	8d 4a 01             	lea    0x1(%edx),%ecx
+80104a98:	89 c8                	mov    %ecx,%eax
+80104a9a:	f7 ee                	imul   %esi
+80104a9c:	89 c8                	mov    %ecx,%eax
+80104a9e:	c1 f8 1f             	sar    $0x1f,%eax
+80104aa1:	c1 fa 05             	sar    $0x5,%edx
+80104aa4:	29 c2                	sub    %eax,%edx
+80104aa6:	89 d0                	mov    %edx,%eax
+80104aa8:	c1 e0 06             	shl    $0x6,%eax
+80104aab:	01 d0                	add    %edx,%eax
+80104aad:	29 c1                	sub    %eax,%ecx
+80104aaf:	89 ca                	mov    %ecx,%edx
 		if(q->que[next]->pid == pid){
-80104ae1:	8b 0c 8b             	mov    (%ebx,%ecx,4),%ecx
+80104ab1:	8b 0c 8b             	mov    (%ebx,%ecx,4),%ecx
 	for(i = q->st; i != q->en; i = next){
-80104ae4:	39 79 10             	cmp    %edi,0x10(%ecx)
-80104ae7:	75 d7                	jne    80104ac0 <dequeuewithpid+0x30>
+80104ab4:	39 79 10             	cmp    %edi,0x10(%ecx)
+80104ab7:	75 d7                	jne    80104a90 <dequeuewithpid+0x30>
 			break;
 		}
 	}
 	p = q->que[i];
 	int j;
 	for(j = i; j != q->en; j = next){
-80104ae9:	8b 45 e4             	mov    -0x1c(%ebp),%eax
-80104aec:	39 d0                	cmp    %edx,%eax
-80104aee:	74 36                	je     80104b26 <dequeuewithpid+0x96>
+80104ab9:	8b 45 e4             	mov    -0x1c(%ebp),%eax
+80104abc:	39 d0                	cmp    %edx,%eax
+80104abe:	74 36                	je     80104af6 <dequeuewithpid+0x96>
 		next = (j+1) % (NPROC+1);
-80104af0:	89 4d e0             	mov    %ecx,-0x20(%ebp)
-80104af3:	89 c1                	mov    %eax,%ecx
-80104af5:	8d 76 00             	lea    0x0(%esi),%esi
-80104af8:	8d 72 01             	lea    0x1(%edx),%esi
-80104afb:	b8 7f e0 07 7e       	mov    $0x7e07e07f,%eax
-80104b00:	89 d7                	mov    %edx,%edi
-80104b02:	f7 ee                	imul   %esi
-80104b04:	89 f0                	mov    %esi,%eax
-80104b06:	c1 f8 1f             	sar    $0x1f,%eax
-80104b09:	c1 fa 05             	sar    $0x5,%edx
-80104b0c:	29 c2                	sub    %eax,%edx
-80104b0e:	89 d0                	mov    %edx,%eax
-80104b10:	c1 e0 06             	shl    $0x6,%eax
-80104b13:	01 d0                	add    %edx,%eax
-80104b15:	29 c6                	sub    %eax,%esi
+80104ac0:	89 4d e0             	mov    %ecx,-0x20(%ebp)
+80104ac3:	89 c1                	mov    %eax,%ecx
+80104ac5:	8d 76 00             	lea    0x0(%esi),%esi
+80104ac8:	8d 72 01             	lea    0x1(%edx),%esi
+80104acb:	b8 7f e0 07 7e       	mov    $0x7e07e07f,%eax
+80104ad0:	89 d7                	mov    %edx,%edi
+80104ad2:	f7 ee                	imul   %esi
+80104ad4:	89 f0                	mov    %esi,%eax
+80104ad6:	c1 f8 1f             	sar    $0x1f,%eax
+80104ad9:	c1 fa 05             	sar    $0x5,%edx
+80104adc:	29 c2                	sub    %eax,%edx
+80104ade:	89 d0                	mov    %edx,%eax
+80104ae0:	c1 e0 06             	shl    $0x6,%eax
+80104ae3:	01 d0                	add    %edx,%eax
+80104ae5:	29 c6                	sub    %eax,%esi
 		q->que[j] = q->que[next];
-80104b17:	8b 04 b3             	mov    (%ebx,%esi,4),%eax
+80104ae7:	8b 04 b3             	mov    (%ebx,%esi,4),%eax
 		next = (j+1) % (NPROC+1);
-80104b1a:	89 f2                	mov    %esi,%edx
+80104aea:	89 f2                	mov    %esi,%edx
 		q->que[j] = q->que[next];
-80104b1c:	89 04 bb             	mov    %eax,(%ebx,%edi,4)
+80104aec:	89 04 bb             	mov    %eax,(%ebx,%edi,4)
 	for(j = i; j != q->en; j = next){
-80104b1f:	39 f1                	cmp    %esi,%ecx
-80104b21:	75 d5                	jne    80104af8 <dequeuewithpid+0x68>
-80104b23:	8b 4d e0             	mov    -0x20(%ebp),%ecx
+80104aef:	39 f1                	cmp    %esi,%ecx
+80104af1:	75 d5                	jne    80104ac8 <dequeuewithpid+0x68>
+80104af3:	8b 4d e0             	mov    -0x20(%ebp),%ecx
 	}
 	q->en = (q->en+NPROC) % (NPROC+1);
-80104b26:	8b 75 e4             	mov    -0x1c(%ebp),%esi
-80104b29:	ba 7f e0 07 7e       	mov    $0x7e07e07f,%edx
-80104b2e:	83 c6 40             	add    $0x40,%esi
-80104b31:	89 f0                	mov    %esi,%eax
-80104b33:	f7 ea                	imul   %edx
-80104b35:	89 f0                	mov    %esi,%eax
-80104b37:	c1 f8 1f             	sar    $0x1f,%eax
-80104b3a:	c1 fa 05             	sar    $0x5,%edx
-80104b3d:	29 c2                	sub    %eax,%edx
-80104b3f:	89 d0                	mov    %edx,%eax
-80104b41:	c1 e0 06             	shl    $0x6,%eax
-80104b44:	01 d0                	add    %edx,%eax
-80104b46:	29 c6                	sub    %eax,%esi
+80104af6:	8b 75 e4             	mov    -0x1c(%ebp),%esi
+80104af9:	ba 7f e0 07 7e       	mov    $0x7e07e07f,%edx
+80104afe:	83 c6 40             	add    $0x40,%esi
+80104b01:	89 f0                	mov    %esi,%eax
+80104b03:	f7 ea                	imul   %edx
+80104b05:	89 f0                	mov    %esi,%eax
+80104b07:	c1 f8 1f             	sar    $0x1f,%eax
+80104b0a:	c1 fa 05             	sar    $0x5,%edx
+80104b0d:	29 c2                	sub    %eax,%edx
+80104b0f:	89 d0                	mov    %edx,%eax
+80104b11:	c1 e0 06             	shl    $0x6,%eax
+80104b14:	01 d0                	add    %edx,%eax
+80104b16:	29 c6                	sub    %eax,%esi
 	return p;
 }
-80104b48:	89 c8                	mov    %ecx,%eax
+80104b18:	89 c8                	mov    %ecx,%eax
 	q->en = (q->en+NPROC) % (NPROC+1);
-80104b4a:	89 b3 08 01 00 00    	mov    %esi,0x108(%ebx)
+80104b1a:	89 b3 08 01 00 00    	mov    %esi,0x108(%ebx)
 }
-80104b50:	8d 65 f4             	lea    -0xc(%ebp),%esp
-80104b53:	5b                   	pop    %ebx
-80104b54:	5e                   	pop    %esi
-80104b55:	5f                   	pop    %edi
-80104b56:	5d                   	pop    %ebp
-80104b57:	c3                   	ret    
+80104b20:	8d 65 f4             	lea    -0xc(%ebp),%esp
+80104b23:	5b                   	pop    %ebx
+80104b24:	5e                   	pop    %esi
+80104b25:	5f                   	pop    %edi
+80104b26:	5d                   	pop    %ebp
+80104b27:	c3                   	ret    
 		panic("queue is empty\n");
-80104b58:	83 ec 0c             	sub    $0xc,%esp
-80104b5b:	68 73 82 10 80       	push   $0x80108273
-80104b60:	e8 1b b8 ff ff       	call   80100380 <panic>
-80104b65:	66 90                	xchg   %ax,%ax
-80104b67:	66 90                	xchg   %ax,%ax
-80104b69:	66 90                	xchg   %ax,%ax
-80104b6b:	66 90                	xchg   %ax,%ax
-80104b6d:	66 90                	xchg   %ax,%ax
-80104b6f:	90                   	nop
+80104b28:	83 ec 0c             	sub    $0xc,%esp
+80104b2b:	68 73 82 10 80       	push   $0x80108273
+80104b30:	e8 4b b8 ff ff       	call   80100380 <panic>
+80104b35:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
+80104b3c:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
+
+80104b40 <qsize>:
+
+int 
+qsize(struct procq *q){
+80104b40:	55                   	push   %ebp
+80104b41:	89 e5                	mov    %esp,%ebp
+80104b43:	53                   	push   %ebx
+80104b44:	8b 45 08             	mov    0x8(%ebp),%eax
+	if(q->st < q->en)
+80104b47:	8b 90 08 01 00 00    	mov    0x108(%eax),%edx
+80104b4d:	8b 88 04 01 00 00    	mov    0x104(%eax),%ecx
+		return q->en - q->st;
+80104b53:	89 d3                	mov    %edx,%ebx
+80104b55:	8d 42 40             	lea    0x40(%edx),%eax
+80104b58:	29 cb                	sub    %ecx,%ebx
+80104b5a:	29 c8                	sub    %ecx,%eax
+80104b5c:	39 d1                	cmp    %edx,%ecx
+80104b5e:	0f 4c c3             	cmovl  %ebx,%eax
+	else
+		return q->en + NPROC - q->st;
+}
+80104b61:	8b 5d fc             	mov    -0x4(%ebp),%ebx
+80104b64:	c9                   	leave  
+80104b65:	c3                   	ret    
+80104b66:	66 90                	xchg   %ax,%ax
+80104b68:	66 90                	xchg   %ax,%ax
+80104b6a:	66 90                	xchg   %ax,%ax
+80104b6c:	66 90                	xchg   %ax,%ax
+80104b6e:	66 90                	xchg   %ax,%ax
 
 80104b70 <initsleeplock>:
 #include "spinlock.h"
@@ -12185,7 +12193,7 @@ void
 sys_monopolize(void)
 {
   monopolize();
-801060f0:	e9 6b e7 ff ff       	jmp    80104860 <monopolize>
+801060f0:	e9 3b e7 ff ff       	jmp    80104830 <monopolize>
 801060f5:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
 801060fc:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
 
@@ -12196,7 +12204,7 @@ void
 sys_unmonopolize(void)
 {
   unmonopolize();
-80106100:	e9 8b e7 ff ff       	jmp    80104890 <unmonopolize>
+80106100:	e9 5b e7 ff ff       	jmp    80104860 <unmonopolize>
 80106105:	8d b4 26 00 00 00 00 	lea    0x0(%esi,%eiz,1),%esi
 8010610c:	8d 74 26 00          	lea    0x0(%esi,%eiz,1),%esi
 

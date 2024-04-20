@@ -83,3 +83,12 @@ dequeuewithpid(struct procq *q, int pid){
 	q->en = (q->en+NPROC) % (NPROC+1);
 	return p;
 }
+
+int 
+qsize(struct procq *q){
+	if(q->st < q->en)
+		return q->en - q->st;
+	else
+		return q->en + NPROC - q->st;
+}
+

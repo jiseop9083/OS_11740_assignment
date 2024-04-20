@@ -135,7 +135,7 @@ int             isempty(struct procq*);
 void            enqueue(struct procq*, struct proc*);
 struct proc*    dequeue(struct procq*);
 struct proc*    dequeuewithpid(struct procq*, int);
-
+int             qsize(struct procq*);
 
 // swtch.S
 void            swtch(struct context**, struct context*);
