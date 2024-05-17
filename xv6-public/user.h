@@ -23,12 +23,10 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-void yield(void);
-int getlev(void);
-int setpriority(int, int);
-int setmonopoly(int, int);
-void monopolize(void);
-void unmonopolize(void);
+
+int thread_create(thread_t*, void *(void*), void*);
+void thread_exit(void*);
+int thread_join(thread_t, void**);
 
 // ulib.c
 int stat(const char*, struct stat*);

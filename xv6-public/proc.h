@@ -49,11 +49,12 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  int priority;                // priority used in L3 queue
-  int qlev;
-  int ticks;                   // time quantum
+	
+	int tid;										 // Thread ID
+	int nexttid;								 // next thread tid(only use in main thread)
+	struct proc *mthread; 			 // main thread pointer
+	void *retval;								 // return value of thread
 };
-
 // Process memory is laid out contiguously, low addresses first:
 //   text
 //   original data and bss

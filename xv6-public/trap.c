@@ -22,6 +22,7 @@ tvinit(void)
   for(i = 0; i < 256; i++)
     SETGATE(idt[i], 0, SEG_KCODE<<3, vectors[i], 0);
   SETGATE(idt[T_SYSCALL], 1, SEG_KCODE<<3, vectors[T_SYSCALL], DPL_USER);
+
   initlock(&tickslock, "time");
 }
 
@@ -49,12 +50,9 @@ trap(struct trapframe *tf)
   case T_IRQ0 + IRQ_TIMER:
     if(cpuid() == 0){
       acquire(&tickslock);
-	  	ticks++;
-			wakeup(&ticks);
-			if(ticks % 100 == 0) { 
-				priorityboosting();	
-			}
-    	release(&tickslock);
+      ticks++;
+      wakeup(&ticks);
+      release(&tickslock);
     }
     lapiceoi();
     break;
@@ -105,12 +103,9 @@ trap(struct trapframe *tf)
   // Force process to give up CPU on clock tick.
   // If interrupts were on while locks held, would need to check nlock.
   if(myproc() && myproc()->state == RUNNING &&
-     tf->trapno == T_IRQ0+IRQ_TIMER){
-		myproc()->ticks++;
-		if(myproc()->qlev != 99 && (myproc()->qlev * 2 + 2) <= myproc()->ticks){
-			yield();
-		}
-	}
+     tf->trapno == T_IRQ0+IRQ_TIMER)
+    yield();
+
   // Check if the process has been killed since we yielded
   if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
     exit();

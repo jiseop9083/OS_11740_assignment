@@ -4,7 +4,6 @@ struct file;
 struct inode;
 struct pipe;
 struct proc;
-struct procq;
 struct rtcdate;
 struct spinlock;
 struct sleeplock;
@@ -120,22 +119,14 @@ void            sleep(void*, struct spinlock*);
 void            userinit(void);
 int             wait(void);
 void            wakeup(void*);
-
-void            priorityboosting(void);
-// custom syscall
 void            yield(void);
-int             setpriority(int, int);
-int             setmonopoly(int, int);
-void            monopolize(void);
-void            unmonopolize(void);
 
-// procq.c
-void						qinit(struct procq*, int);
-int             isempty(struct procq*);
-void            enqueue(struct procq*, struct proc*);
-struct proc*    dequeue(struct procq*);
-struct proc*    dequeuewithpid(struct procq*, int);
-int             qsize(struct procq*);
+int							thread_create(thread_t*, void*(void *), void*);
+void						thread_exit(void*);
+void						thread_exit_all(struct proc*);
+void						thread_exit_with_pointer(struct proc*);
+int 						thread_join(thread_t, void**);
+void 						convert_main_thread(struct proc*);
 
 // swtch.S
 void            swtch(struct context**, struct context*);

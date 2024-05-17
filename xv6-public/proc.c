@@ -5,15 +5,11 @@
 #include "mmu.h"
 #include "x86.h"
 #include "proc.h"
-#include "procq.h"
 #include "spinlock.h"
 
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
-  struct procq lq[4]; // Ln queues
-	struct procq moq;
-	int ismoq;
 } ptable;
 
 static struct proc *initproc;
@@ -24,21 +20,12 @@ extern void trapret(void);
 
 static void wakeup1(void *chan);
 
-// init ptable
+void updatesz(struct proc*);
+
 void
 pinit(void)
 {
   initlock(&ptable.lock, "ptable");
- 
-	acquire(&ptable.lock);
-  
-	int i;
-	for(i = 0; i < 3; i++)
-		qinit(&ptable.lq[i], 0);
-	qinit(&ptable.lq[3], 1);
-	qinit(&ptable.moq, 0);
-	ptable.ismoq = 0;
-	release(&ptable.lock);
 }
 
 // Must be called with interrupts disabled
@@ -103,9 +90,10 @@ allocproc(void)
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-  p->priority = 0; 
-  p->qlev = 0; 
-  p->ticks = 0;
+
+	p->nexttid = 0;
+	p->tid = -1;
+
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -159,6 +147,10 @@ userinit(void)
   safestrcpy(p->name, "initcode", sizeof(p->name));
   p->cwd = namei("/");
 
+	p->mthread = p;
+	p->tid = 0;
+	p->nexttid = 1;
+
   // this assignment to p->state lets other cores
   // run this process. the acquire forces the above
   // writes to be visible, and the lock is also needed
@@ -166,8 +158,8 @@ userinit(void)
   acquire(&ptable.lock);
 
   p->state = RUNNABLE;
-	enqueue(&ptable.lq[0], p);
-	release(&ptable.lock);
+
+  release(&ptable.lock);
 }
 
 // Grow current process's memory by n bytes.
@@ -177,7 +169,8 @@ growproc(int n)
 {
   uint sz;
   struct proc *curproc = myproc();
-
+	struct proc *mthread = curproc->mthread;
+	acquire(&ptable.lock);
   sz = curproc->sz;
   if(n > 0){
     if((sz = allocuvm(curproc->pgdir, sz, sz + n)) == 0)
@@ -186,8 +179,11 @@ growproc(int n)
     if((sz = deallocuvm(curproc->pgdir, sz, sz + n)) == 0)
       return -1;
   }
-  curproc->sz = sz;
-  switchuvm(curproc);
+  
+  mthread->sz = sz;
+	updatesz(mthread);
+	release(&ptable.lock);
+	switchuvm(curproc);
   return 0;
 }
 
@@ -217,6 +213,10 @@ fork(void)
   np->parent = curproc;
   *np->tf = *curproc->tf;
 
+	// np is main thread
+	np->tid = np->nexttid++;
+	np->mthread = np;
+
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
@@ -232,8 +232,7 @@ fork(void)
   acquire(&ptable.lock);
 
   np->state = RUNNABLE;
-	np->qlev = 0;
-	enqueue(&ptable.lq[0], np);
+
   release(&ptable.lock);
 
   return pid;
@@ -259,6 +258,10 @@ exit(void)
       curproc->ofile[fd] = 0;
     }
   }
+	
+
+	// kill all thread except curproc.
+	thread_exit_all(curproc);
 
   begin_op();
   iput(curproc->cwd);
@@ -347,70 +350,29 @@ scheduler(void)
   for(;;){
     // Enable interrupts on this processor.
     sti();
+
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-		if(ptable.ismoq){
-	  	while(!isempty(&ptable.moq)) {
-	  		p = dequeue(&ptable.moq);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+      if(p->state != RUNNABLE)
+        continue;
 
-				c->proc = p;
-				switchuvm(p);
-				p->state = RUNNING;
+      // Switch to chosen process.  It is the process's job
+      // to release ptable.lock and then reacquire it
+      // before jumping back to us.
+      c->proc = p;
+      switchuvm(p);
+      p->state = RUNNING;
 
-				swtch(&(c->scheduler), p->context);
-	    	switchkvm();
+      swtch(&(c->scheduler), p->context);
+      switchkvm();
 
-				c->proc = 0;
-				if(!ptable.ismoq) // unmonopolize
-					break;
-	  	}
-			int monod = 0;
-			
-			for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-				if(p->state != UNUSED && p->state != ZOMBIE && p->qlev == 99){
-					monod = 1;
-					break;
-				}
-			}
-			release(&ptable.lock);
-			if(!monod)
-				unmonopolize();
-		}
-		else{
-	  	int lev;
-	  	for(lev = 0; lev <= 3; lev++){
-				while(!isempty(&ptable.lq[lev])){
-		  		p = dequeue(&ptable.lq[lev]);
-		  		
+      // Process is done running for now.
+      // It should have changed its p->state before coming back.
+      c->proc = 0;
+    }
+    release(&ptable.lock);
 
-        	// Switch to chosen process.  It is the process's job
-        	// to release ptable.lock and then reacquire it
-        	// before jumping back to us.
-        	c->proc = p;
-        	switchuvm(p);
-        	p->state = RUNNING;
-
-		  		swtch(&(c->scheduler), p->context);
-        	switchkvm();
-
-        	// Process is done running for now.
-        	// It should have changed its p->state before coming back.
-        	c->proc = 0;
-		  		
-					if(ptable.ismoq){
-          	lev = 3;
-		    		break;
-		  		}
-		  		if(!isempty(&ptable.lq[2]))
-						lev = 2;
-		  		if(!isempty(&ptable.lq[1]))
-						lev = 1;
-		  		if(!isempty(&ptable.lq[0]))
-		  			lev = 0;   
-				}
-    	}
-			release(&ptable.lock);
-		}
   }
 }
 
@@ -444,38 +406,8 @@ sched(void)
 void
 yield(void)
 {
-  struct proc *p = myproc();
-
   acquire(&ptable.lock);  //DOC: yieldlock
-	p->ticks = 0;
-	switch (p->qlev){
-		case 0:
-			if(p->pid % 2 == 0){
-		  	p->qlev = 2;
-		 		enqueue(&ptable.lq[2], p);
-			}
-			else{
-			  p->qlev = 1;
-				enqueue(&ptable.lq[1], p);
-			}
-			break;
-		case 1:
-			p->qlev = 3;
-			enqueue(&ptable.lq[3], p);
-		  break;
-		case 2:
-			p->qlev = 3;
-			enqueue(&ptable.lq[3], p);
-	  	break;
-	  case 3:
-			if(p->priority > 0)
-				p->priority--;
-			enqueue(&ptable.lq[3], p);
-			break;
-		default:
-			break;
-	}    
-	p->state = RUNNABLE;
+  myproc()->state = RUNNABLE;
   sched();
   release(&ptable.lock);
 }
@@ -548,15 +480,9 @@ wakeup1(void *chan)
 {
   struct proc *p;
 
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-    if(p->state == SLEEPING && p->chan == chan) {
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    if(p->state == SLEEPING && p->chan == chan)
       p->state = RUNNABLE;
-			if(p->qlev != 99)
-				enqueue(&ptable.lq[p->qlev], p); 
-			else 
-				enqueue(&ptable.moq, p);
-		}
-	}
 }
 
 // Wake up all processes sleeping on chan.
@@ -575,25 +501,22 @@ int
 kill(int pid)
 {
   struct proc *p;
+	int iskill = 0;
 
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
     if(p->pid == pid){
       p->killed = 1;
       // Wake process from sleep if necessary.
-      if(p->state == SLEEPING){
+      if(p->state == SLEEPING)
         p->state = RUNNABLE;
-	    	if(p->qlev != 99)
-					enqueue(&ptable.lq[p->qlev], p);
-	  		else 
-					enqueue(&ptable.moq, p);
-			}
-	  	release(&ptable.lock);
-      return 0;
+      iskill = 1;
     }
   }
-  release(&ptable.lock);
-  return -1;
+	release(&ptable.lock);
+  if(iskill)
+		return 0;
+	return -1;
 }
 
 //PAGEBREAK: 36
@@ -633,89 +556,214 @@ procdump(void)
   }
 }
 
-void
-priorityboosting(void)
+int
+thread_create(thread_t *thread, void*(*start_routine)(void *), void *arg)
 {
+	int i;
+	struct proc *nt; // new thread
+	struct proc *curproc = myproc();
+	struct proc *mthread = curproc->mthread; // main thread
+	uint sz, sp, ustack[2];
+	
+	
+	if((nt = allocproc()) == 0){
+		return -1;
+	}
+	
 	acquire(&ptable.lock);
-  if(ptable.ismoq){
-		release(&ptable.lock);
-		return;
-	}
- 	struct proc *p;
-  int i;
-  for(i = 0; i < 3; i++){
-		qinit(&ptable.lq[i], 0);
-	}
-	qinit(&ptable.lq[3], 1);
 
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-		if(p->state == RUNNABLE && p->qlev != 99){
-	 		p->ticks = 0;
-			p->qlev = 0;
-			enqueue(&ptable.lq[0], p);
-		}
-  }
-  release(&ptable.lock);
+	sz = PGROUNDUP((mthread->sz));
+	if((sz = allocuvm(mthread->pgdir, sz, sz + 2*PGSIZE)) == 0)
+		return -1;
+	clearpteu(mthread->pgdir, (char*)(sz - 2*PGSIZE));
+	
+	// set pid and tid
+	nt->parent = mthread->parent;
+	nt->pid = mthread->pid;
+	nt->tid = mthread->nexttid++;
+	nt->mthread = mthread;
+	*thread = nt->tid;
+	mthread->sz = sz;
+		
+	updatesz(mthread);
+
+	// sharing page directory
+	nt->pgdir = mthread->pgdir;
+
+
+	sp = sz;
+	// start function should be located in front of argment
+	ustack[0] = 0xffffffff; // fake return PC
+	ustack[1] = (uint)arg;  // argument
+	sp -= 8;
+	if(copyout(nt->pgdir, sp, ustack, 8) < 0)
+		return -1;
+
+	// set stack pointer
+	*nt->tf = *mthread->tf;
+	
+	nt->tf->esp = sp;
+	nt->tf->eax = 0;
+  nt->tf->eip = (uint)start_routine;
+	
+	for(i = 0; i < NOFILE; i++)
+		if(mthread->ofile[i])
+			nt->ofile[i] = filedup((mthread->ofile[i]));
+	nt->cwd = idup(mthread->cwd);
+
+	safestrcpy(nt->name, mthread->name, sizeof(mthread->name));
+	
+	nt->state = RUNNABLE;
+
+	release(&ptable.lock);
+
+	return 0;
 }
+
+
+void 
+thread_exit(void *retval)
+{
+	struct proc *curthread = myproc();
+	curthread->retval = retval;
+	thread_exit_with_pointer(curthread);
+	sched();
+	panic("zombie exit");
+}
+
+
 
 int 
-setpriority(int pid, int priority)
+thread_join(thread_t thread, void **retval)
 {
-  struct proc *p; 
-  acquire(&ptable.lock);
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    if(p->pid == pid){
-	  	p->priority = priority;
-	  	release(&ptable.lock);
-	  	return 0;
-		}
-  }
-  release(&ptable.lock);
-  return -1;
-}
+	struct proc *p;
+	struct proc *curthread = myproc();
+	if(thread == 0)
+		return -1;
+	acquire(&ptable.lock);
+	for(;;){
+		for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+			if(p->pid != curthread->pid || p->tid != thread)
+				continue;
+			
+			if(p->state == ZOMBIE) {
+				*retval = p->retval;
 
-int
-setmonopoly(int pid, int password)
-{
-  struct proc *p;
-  acquire(&ptable.lock);
-  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-		if(p->pid == pid){
-	  	if(p->qlev == 99){
+				// deallocate kernel stack
+				kfree(p->kstack);
+				p->kstack = 0;
+				p->pid = 0;
+				p->parent = 0;
+				p->name[0] = 0;
+				p->killed = 0;
+				p->state = UNUSED;
 				release(&ptable.lock);
-	    	return -3;
-	  	}
-			if(p->state == RUNNABLE){
-				dequeuewithpid(&ptable.lq[p->qlev], pid);
+				return 0;
 			}
-			enqueue(&ptable.moq, p);
-	  	p->qlev = 99;
-			int ret = qsize(&ptable.moq);
-	  	release(&ptable.lock);
-	  	return ret;
+
 		}
-  }
-  release(&ptable.lock);
-  return -1;
+	
+		// Wait for thread to exit.
+		sleep(curthread, &ptable.lock); 
+	}
+	return -1;
 }
 
 void 
-monopolize(void)
+updatesz(struct proc* mthread)
 {
-	acquire(&ptable.lock);
-  ptable.ismoq = 1;
-	release(&ptable.lock);
-  return;
+	struct proc* p;
+	for(p=ptable.proc;p<&ptable.proc[NPROC]; p++){
+		if(p->pid == mthread->pid && p != mthread){
+			p->sz = mthread->sz;
+		}
+	}
 }
 
-void
-unmonopolize(void)
+// exit thread in other thread.
+void 
+thread_exit_with_pointer(struct proc* thread)
 {
+	struct proc* p;
+	int fd;
+
+	if(thread == initproc)
+		panic("init exiting");
+
+	// Close all open files.
+	for(fd = 0; fd < NOFILE; fd++){
+		if(thread->ofile[fd]){
+			fileclose(thread->ofile[fd]);
+			thread->ofile[fd] = 0;
+		}
+	}
+
+	begin_op();
+	iput(thread->cwd);
+	end_op();
+	thread->cwd = 0;
+	
 	acquire(&ptable.lock);
-  ptable.ismoq = 0;
+	
+	wakeup1(thread->mthread);
+
+	// Pass abandoned children to init.
+	for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+		if(p->parent == thread){
+			p->parent = initproc;
+			if(p->state == ZOMBIE)
+				wakeup1(initproc);
+		}
+	}
+	// Jump into the scheduler, never to return.
+	thread->state = ZOMBIE;
+}
+
+// exit all thread except arg mthread.
+void 
+thread_exit_all(struct proc *mthread)
+{
+	struct proc* p;
+	acquire(&ptable.lock);
+	convert_main_thread(mthread);
+	for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+		if(p->pid == mthread->pid && p != mthread){
+			release(&ptable.lock);
+			thread_exit_with_pointer(p);
+		
+			// deallocate memory
+			kfree(p->kstack);
+			p->kstack = 0;
+			p->pid = 0;
+			p->parent = 0;
+			p->name[0] = 0;
+			p->killed = 0;
+			p->state = UNUSED;
+			p->sz = 0;
+		}
+	}
+
 	release(&ptable.lock);
-	acquire(&tickslock);
-	ticks = 0;
-	release(&tickslock);
-  return;
+
+}
+
+void convert_main_thread(struct proc *thread)
+{
+	struct proc *prevmthread = thread->mthread;
+	if(thread == prevmthread)
+		return;
+	if(thread->pid != prevmthread->pid) {
+		panic("can not convert if process are different");
+	}
+	struct proc* p;
+	int tmptid = thread->tid;
+	thread->tid = 0;
+	prevmthread->tid = tmptid;
+	thread->mthread = thread;
+	thread->nexttid = prevmthread->nexttid;
+	for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+		if(p->pid == prevmthread->pid){
+			p->mthread = thread;
+		}
+	}
 }

@@ -42,56 +42,6 @@ sys_getpid(void)
   return myproc()->pid;
 }
 
-int 
-sys_getlev(void)
-{
-  return myproc()->qlev;
-}
-
-int
-sys_setpriority(void)
-{
-  int pid;
-  int priority;
-  if(argint(0, &pid) < 0)
-    return -1;
-  argint(1, &priority);
-  if(priority < 0 || priority > 10)
-    return -2;
-  return setpriority(pid, priority);
-}
-
-int
-sys_setmonopoly(void)
-{
-  int pid;
-  int password;
-  if(argint(0, &pid) < 0)
-		return -1;
-  if(argint(1, &password) < 0)
-		return -1;
-  if(password != 2020052633)
-		return -2;
-  if(myproc()->pid == pid)
-		return -4;
-  return setmonopoly(pid, password);
-
-}
-
-void
-sys_monopolize(void)
-{
-  monopolize();
-  return;
-}
-
-void
-sys_unmonopolize(void)
-{
-  unmonopolize();
-  return;
-}
-
 int
 sys_sbrk(void)
 {
@@ -127,12 +77,6 @@ sys_sleep(void)
   return 0;
 }
 
-void
-sys_yield(void){
-	yield();
-	return;
-}
-
 // return how many clock tick interrupts have occurred
 // since start.
 int
@@ -144,4 +88,38 @@ sys_uptime(void)
   xticks = ticks;
   release(&tickslock);
   return xticks;
+}
+
+int 
+sys_thread_create(void)
+{
+	thread_t *thread;
+	void *(*start_routine)(void *);
+	void *arg;
+
+	if(argptr(0, (char**)&thread, sizeof(thread)) < 0 || argptr(1, (char**)&start_routine, sizeof(start_routine)) < 0 || argptr(2, (char**)&arg, sizeof(arg)) < 0)
+		return -1;
+	return thread_create(thread, start_routine, arg);
+}
+
+int 
+sys_thread_exit(void)
+{
+	void *retval;
+
+	if(argptr(0, (char**)&retval, sizeof(retval)) <0)
+		return -1;
+	thread_exit(retval);
+	return 0;
+}
+
+int
+sys_thread_join(void)
+{
+	thread_t thread;
+	void **retval;
+
+	if(argint(0, (int*)&thread) < 0 || argptr(1, (char**)&retval, sizeof(retval)) < 0)
+		return -1;
+	return thread_join(thread, retval);
 }
