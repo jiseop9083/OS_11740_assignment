@@ -192,10 +192,6 @@ fork(void)
   
 	// Copy process state from proc.
   if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
-    //if(get_refc((uint)np->kstack) == 1) //
-			//kfree(np->kstack); /// 
-		//else
-			//decr_refc((uint)np->kstack);
 		kfree(np->kstack); 
 		np->kstack = 0;
     np->state = UNUSED;
@@ -541,7 +537,7 @@ procdump(void)
 int
 countvp(void)
 {
-	int ret = myproc()->sz >> PTXSHIFT;
+	int ret = myproc()->sz >> PGSHIFT;
 	return ret;
 }
 
@@ -572,29 +568,18 @@ countpp(void)
 	return ret;
 }
 
-extern char end[];
-
 int 
 countptp(void)
 {
 	int ret = 0;
 	pte_t *pgdir = myproc()->pgdir;
-	pte_t *pte;
-	int i, j;
+	int i;
 	if(pgdir == 0)
 		return ret;
 	ret++;
-
 	for(i = 0; i < NPDENTRIES; i++){
 		if(pgdir[i] & PTE_P){
 			ret++;
-			pte = (pte_t*)P2V(PTE_ADDR(pgdir[i]));
-			for(j = 0; j < NPTENTRIES; j++){
-				if(pte[j] & PTE_P) {
-	//				ret++;
-			//		break; // temp
-				}
-			}
 		}
 	}
 	return ret;

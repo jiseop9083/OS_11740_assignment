@@ -317,8 +317,8 @@ copyuvm(pde_t *pgdir, uint sz)
 {
   pde_t *d;
   pte_t *pte;
-  uint pa, i, flags; //
-  //char *mem;
+  uint pa, i, flags;
+
 
   if((d = setupkvm()) == 0)
     return 0;
@@ -327,20 +327,16 @@ copyuvm(pde_t *pgdir, uint sz)
       panic("copyuvm: pte should exist");
     if(!(*pte & PTE_P))
       panic("copyuvm: page not present");
-    *pte &= (~PTE_W); ////
+    *pte &= (~PTE_W);
     pa = PTE_ADDR(*pte);
     flags = PTE_FLAGS(*pte);
-		//if((mem = kalloc()) == 0)
-      //goto bad;
-    //memmove(mem, (char*)P2V(pa), PGSIZE);
+		
     if(mappages(d, (void*)i, PGSIZE, pa, flags) < 0) {
-      
-			//kfree(mem);
       goto bad;
     }
-		incr_refc(pa); ////////
+		incr_refc(pa); 
   }
-	lcr3(V2P(pgdir)); ///////
+	lcr3(V2P(pgdir));
   return d;
 
 bad:
@@ -389,25 +385,23 @@ copyout(pde_t *pgdir, uint va, void *p, uint len)
   return 0;
 }
 
-/////////
+
 // copy user memory
 void
 CoW_handler(void)
 {
 	uint va;
 	char* mem;
-	uint pa, newpa;
+	uint pa;
+	pte_t *pte;
 	if((va = rcr2()) < 0) {
 		panic("invaild rcr2 value");
 	}
-	pte_t *pte = walkpgdir(myproc()->pgdir, (void*)va, 0);
-	//if(pte == 0 || (*pte & PTE_V) == 0)
-		//panic("pagefault: invalid address");
-
-	//if((*pte & PTE_W) != 0) {
-		//panic("pagefault: writable page fault");
-	//}
-
+	if((pte = walkpgdir(myproc()->pgdir, (void*)va, 0)) == 0 || !(*pte & PTE_P)){
+		cprintf("CoW handler: address should exist");
+		exit();
+		return;
+	}
 
   pa = PTE_ADDR(*pte);
 	if(get_refc(pa) > 1) {
@@ -416,11 +410,8 @@ CoW_handler(void)
 		memmove(mem, (char*)P2V(pa), PGSIZE);
 		*pte = V2P(mem) | PTE_P | PTE_W | PTE_U; // update PTE to point to new page
 		decr_refc(pa);
-		newpa = PTE_ADDR(*pte);
-		incr_refc(newpa);
-
 	} else {
-		*pte |= PTE_W; // if it is not shared, make the page writable only.
+		*pte |= PTE_W; // if it is not shared, make the page writable.
 	}
 
 	// flush the TLB

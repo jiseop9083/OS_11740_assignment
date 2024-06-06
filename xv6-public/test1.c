@@ -14,9 +14,8 @@ main(int argc, char *argv[])
 
   pid = fork();
   if(pid == 0){
-    child_fp = countfp();
-		printf(1, "fp: %d %d\n", parent_fp, child_fp);    
-    if(parent_fp - child_fp == 68)
+		child_fp = countfp();
+		if(parent_fp - child_fp == 68)
       printf(1, "[Test 1] pass\n\n");
     else
       printf(1, "[Test 1] fail\n\n");
